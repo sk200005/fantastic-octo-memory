@@ -1,13 +1,24 @@
-// Entry point
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
 
-require("dotenv").config();
-const connectDB = require("./src/config/db");
-const app = require("./src/app");
+const rssRoutes = require("./src/routes/rssRoutes");
+const scraperRoutes = require("./src/routes/scraperRoutes");
+const articleRoutes = require("./src/routes/articleRoutes");
 
-const PORT = process.env.PORT || 5000;
+const app = express();
 
-connectDB();
+app.use(cors());
+app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+mongoose.connect("mongodb://127.0.0.1:27017/insight-ai")
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
+
+app.use("/api/rss", rssRoutes);
+app.use("/api/scraper", scraperRoutes);
+app.use("/api/articles", articleRoutes);
+
+app.listen(8000, () => {
+  console.log("Server running on port 8000");
 });

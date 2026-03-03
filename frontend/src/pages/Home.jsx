@@ -7,7 +7,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await api.get("/test");
+        const res = await api.get("/rss/fetch");
         setMessage(res.data.message);
       } catch (error) {
         console.error("API Error:", error);
