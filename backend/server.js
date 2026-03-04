@@ -1,14 +1,23 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+
 const rssRoutes = require("./src/routes/rssRoutes");
 const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
+const biasRoutes = require("./src/routes/biasRoutes");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 mongoose.connect("mongodb://127.0.0.1:27017/insight-ai")
@@ -18,6 +27,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/insight-ai")
 app.use("/api/rss", rssRoutes);
 app.use("/api/scraper", scraperRoutes);
 app.use("/api/articles", articleRoutes);
+app.use("/api/bias", biasRoutes);
 
 app.listen(8000, () => {
   console.log("Server running on port 8000");

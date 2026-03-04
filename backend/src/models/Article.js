@@ -29,10 +29,17 @@ const articleSchema = new mongoose.Schema({
   },
 
   processingStatus: {
-    type: String,
-    enum: ["pending", "scraped", "failed"],
-    default: "pending"
-  }
+  type: String,
+  enum: ["pending", "scraped", "analyzed", "failed"]
+  },
+  
+  bias: {
+  politicalLean: String,
+  sentiment: String,
+  biasScore: Number,
+  emotionalTone: String
+}
+
 
 }, { timestamps: true });
 

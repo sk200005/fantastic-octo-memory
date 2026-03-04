@@ -1,1 +1,10 @@
 Backend - npm run dev
+Frontend - npm run dev
+
+
+1. /api/rss/fetch
+2. /api/scraper/run
+3. /api/bias/run   ← NEW
+4. (future) /api/summarizer/run
+
+http://localhost:8000/api/bias/run
