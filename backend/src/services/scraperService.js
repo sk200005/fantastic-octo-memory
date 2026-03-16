@@ -1,3 +1,5 @@
+//Scrapping of news Articles
+
 const axios = require("axios");
 const cheerio = require("cheerio");
 const Article = require("../models/Article");
@@ -6,7 +8,7 @@ const scrapeArticles = async () => {
   try {
     const articles = await Article.find({
       processingStatus: "pending"
-    });
+    }).limit(5);
 
     for (let article of articles) {
       try {

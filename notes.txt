@@ -7,4 +7,35 @@ Frontend - npm run dev
 3. /api/bias/run   ← NEW
 4. (future) /api/summarizer/run
 
-http://localhost:8000/api/bias/run
+1️⃣ GET http://localhost:8000/api/rss/fetch
+      ↓
+RSS Feed → Parse → Store metadata in MongoDB
+
+2️⃣ POST http://localhost:8000/api/scraper/run
+      ↓
+pending articles → scrape HTML → extract text + image
+
+3️⃣ POST http://localhost:8000/api/bias/run
+      ↓
+scraped articles → Gemini AI → bias analysis
+
+4️⃣ GET http://localhost:8000/api/articles
+      ↓
+display in frontend
+
+
+
+
+
+
+
+
+
+
+
+✅ models/gemini-2.5-flash
+✅ models/gemini-2.5-pro
+✅ models/gemini-2.0-flash
+✅ models/gemini-2.0-flash-001
+✅ models/gemini-flash-latest
+✅ models/gemini-pro-latest

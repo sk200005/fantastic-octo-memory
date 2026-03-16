@@ -1,0 +1,9 @@
+spacy
+transformers
+torch
+sentence-transformers
+fastapi
+uvicorn
+
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm

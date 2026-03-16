@@ -34,11 +34,12 @@ const articleSchema = new mongoose.Schema({
   },
   
   bias: {
-  politicalLean: String,
-  sentiment: String,
-  biasScore: Number,
-  emotionalTone: String
-}
+    politicalLean: String,
+    sentiment: String,
+    biasScore: Number,
+    emotionalTone: String,
+    explanation: String
+  }
 
 
 }, { timestamps: true });

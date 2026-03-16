@@ -10,6 +10,7 @@ const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
 const biasRoutes = require("./src/routes/biasRoutes");
 
+
 const app = express();
 
 app.use(
