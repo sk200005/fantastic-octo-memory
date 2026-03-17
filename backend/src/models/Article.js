@@ -18,8 +18,15 @@ const articleSchema = new mongoose.Schema({
     type: Date
   },
 
-  // 🔽 ADD THESE FIELDS
   content: {
+    type: String,
+    default: ""
+  },
+  rawContent: {
+    type: String,
+    default: ""
+  },
+  summary: {
     type: String,
     default: ""
   },

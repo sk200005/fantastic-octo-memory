@@ -9,6 +9,7 @@ const rssRoutes = require("./src/routes/rssRoutes");
 const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
 const biasRoutes = require("./src/routes/biasRoutes");
+const summarizationRoutes = require("./src/routes/summarizationRoutes");
 
 
 const app = express();
@@ -29,6 +30,7 @@ app.use("/api/rss", rssRoutes);
 app.use("/api/scraper", scraperRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/bias", biasRoutes);
+app.use("/api/summarize", summarizationRoutes);
 
 app.listen(8000, () => {
   console.log("Server running on port 8000");

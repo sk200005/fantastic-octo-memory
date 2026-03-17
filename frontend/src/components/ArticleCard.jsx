@@ -27,7 +27,7 @@ function ArticleCard({ article }) {
           </p>
 
           <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
-            {article.content?.slice(0, 350)}...
+            {article.summary || `${article.rawContent?.slice(0, 120) || ""}...`}
           </p>
         </div>
 

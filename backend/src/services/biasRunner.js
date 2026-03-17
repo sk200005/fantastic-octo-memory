@@ -19,7 +19,15 @@ const runBiasAnalysis = async () => {
 
     for (let article of articles) {
       try {
-        const bias = await analyzeBias(article.content);
+        const articleText = article.rawContent || article.content;
+
+        if (!articleText) {
+          article.processingStatus = "failed";
+          await article.save();
+          continue;
+        }
+
+        const bias = await analyzeBias(articleText);
 
         article.bias = {
           politicalLean: bias.politicalLean,

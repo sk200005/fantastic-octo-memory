@@ -22,7 +22,7 @@ const scrapeArticles = async () => {
 
         const $ = cheerio.load(response.data);
 
-        const content = $("p")
+        const rawContent = $("p")
           .map((i, el) => $(el).text().trim())
           .get()
           .join(" ")
@@ -31,13 +31,13 @@ const scrapeArticles = async () => {
         const image =
           $('meta[property="og:image"]').attr("content") || "";
 
-        if (!content || content.length < 200) {
+        if (!rawContent || rawContent.length < 200) {
           article.processingStatus = "failed";
           await article.save();
           continue;
         }
 
-        article.content = content;
+        article.rawContent = rawContent;
         article.image = image;
         article.processingStatus = "scraped";
 

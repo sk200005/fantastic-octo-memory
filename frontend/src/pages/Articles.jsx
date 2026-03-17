@@ -22,8 +22,8 @@ function Articles() {
       setStatusMessage("Scraping pending articles...");
       await api.post("/scraper/run");
 
-      setStatusMessage("Running Gemini bias analysis...");
-      await api.post("/bias/run");
+      setStatusMessage("Generating article summaries...");
+      await api.post("/summarize");
 
       await fetchArticles();
       setStatusMessage("Articles reloaded successfully.");

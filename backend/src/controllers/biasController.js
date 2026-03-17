@@ -16,8 +16,16 @@ async function runBiasAnalysis(req, res) {
 
     for (const article of articles) {
       try {
+        const articleText = article.rawContent || article.content;
+
+        if (!articleText) {
+          article.processingStatus = "failed";
+          await article.save();
+          continue;
+        }
+
         // 2️⃣ Call Gemini
-        const biasResult = await analyzeBias(article.content);
+        const biasResult = await analyzeBias(articleText);
 
         // 3️⃣ Save bias data
         article.bias = {
