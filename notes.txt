@@ -27,7 +27,9 @@ display in frontend
 
 
 
-
+./.venv/bin/python -m uvicorn bias_pipeline:app --reload --port 9000
+npm run dev
+npm run dev
 
 
 

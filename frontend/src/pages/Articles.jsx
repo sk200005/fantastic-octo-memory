@@ -25,6 +25,9 @@ function Articles() {
       setStatusMessage("Generating article summaries...");
       await api.post("/summarize");
 
+      setStatusMessage("Analyzing news bias...");
+      await api.post("/bias/run");
+
       await fetchArticles();
       setStatusMessage("Articles reloaded successfully.");
     } catch (error) {

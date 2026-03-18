@@ -37,7 +37,7 @@ const articleSchema = new mongoose.Schema({
 
   processingStatus: {
   type: String,
-  enum: ["pending", "scraped", "analyzed", "failed"]
+  enum: ["pending", "scraped", "analyzed", "bias_analyzed", "failed"]
   },
   
   bias: {

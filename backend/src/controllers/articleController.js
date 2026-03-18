@@ -14,7 +14,7 @@ const getAllArticles = async (req, res) => {
 const getScrapedArticles = async (req, res) => {
   try {
     const articles = await Article.find({
-      processingStatus: { $in: ["scraped", "analyzed"] },
+      processingStatus: { $in: ["scraped", "analyzed", "bias_analyzed"] },
     }).sort({ publishedAt: -1 });
 
     res.status(200).json(articles);

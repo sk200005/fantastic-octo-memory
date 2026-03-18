@@ -1,14 +1,8 @@
 const express = require("express");
+const { runBiasAnalysis } = require("../controllers/biasController");
+
 const router = express.Router();
 
-const runBiasAnalysis = require("../services/biasRunner");
-
-router.post("/run", async (req, res) => {
-
-  const result = await runBiasAnalysis();
-
-  res.json(result);
-
-});
+router.post("/run", runBiasAnalysis);
 
 module.exports = router;
