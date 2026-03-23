@@ -1,39 +1,17 @@
-//Fetching of News Articles [5 only]
+const { ingestArticles } = require("./rssIngestionService");
 
-const Parser = require("rss-parser");
-const Article = require("../models/Article");
-
-const parser = new Parser();
-
-const fetchRSS = async () => {
+async function fetchRSS() {
   try {
-    const feed = await parser.parseURL(
-      "https://feeds.bbci.co.uk/news/rss.xml"
-    );
+    const result = await ingestArticles();
 
-    const items = feed.items.slice(0, 5);
-
-    for (let item of items) {
-      await Article.updateOne(
-        { link: item.link },
-        {
-          $setOnInsert: {
-            title: item.title,
-            link: item.link,
-            source: "BBC News",
-            publishedAt: item.pubDate,
-            processingStatus: "pending"
-          }
-        },
-        { upsert: true }
-      );
-    }
-
-    return { success: true, message: "5 RSS articles fetched" };
-
+    return {
+      success: true,
+      message: `${result.count} articles fetched`,
+      ...result,
+    };
   } catch (error) {
     return { success: false, error: error.message };
   }
-};
+}
 
 module.exports = fetchRSS;

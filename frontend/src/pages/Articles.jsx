@@ -16,8 +16,8 @@ function Articles() {
   const reloadArticles = async () => {
     try {
       setLoading(true);
-      setStatusMessage("Fetching 5 articles from RSS...");
-      await api.get("/rss/fetch");
+      setStatusMessage("Fetching 6 balanced articles from rotating RSS sources...");
+      await api.get("/news/reload-news");
 
       setStatusMessage("Scraping pending articles...");
       await api.post("/scraper/run");

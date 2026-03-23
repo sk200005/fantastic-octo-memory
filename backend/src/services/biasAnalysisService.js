@@ -5,7 +5,7 @@ const {
   markArticleBiasFailed,
 } = require("./articleBiasRepository");
 const { analyzeLocalBiasSignals } = require("./pythonClient");
-const { analyzePoliticalBiasWithGemini } = require("./geminiBiasService");
+const { analyzePoliticalBiasBatch } = require("./geminiBiasService");
 
 function buildBiasText(article) {
   const rawContent = article.rawContent || article.content || "";
@@ -21,7 +21,12 @@ ${rawContent.slice(0, 1500)}`;
 async function analyzeSingleArticleBias(article) {
   const biasText = buildBiasText(article);
   const localSignals = await analyzeLocalBiasSignals(biasText);
-  const politicalBias = await analyzePoliticalBiasWithGemini(biasText);
+  const [politicalBias] = await analyzePoliticalBiasBatch([
+    {
+      title: article.title,
+      summary: article.summary,
+    },
+  ]);
 
   return {
     politicalLean: politicalBias.politicalLean,
@@ -45,12 +50,18 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE) {
 
     let analyzed = 0;
     const failures = [];
+    const localResults = new Array(articles.length);
+    const geminiEligibleArticles = [];
+    const geminiEligibleIndexes = [];
 
-    for (const article of articles) {
+    for (const [index, article] of articles.entries()) {
       try {
-        const bias = await analyzeSingleArticleBias(article);
-        await updateArticleBias(article._id, bias);
-        analyzed++;
+        const biasText = buildBiasText(article);
+        const localSignals = await analyzeLocalBiasSignals(biasText);
+
+        localResults[index] = localSignals;
+        geminiEligibleArticles.push(article);
+        geminiEligibleIndexes.push(index);
       } catch (error) {
         const reason = error.message || "Unknown bias analysis error";
         console.error("Bias analysis failed for article:", article._id, reason);
@@ -59,6 +70,41 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE) {
           articleId: article._id,
           error: reason,
         });
+      }
+    }
+
+    if (geminiEligibleArticles.length > 0) {
+      try {
+        const politicalBiasResults = await analyzePoliticalBiasBatch(
+          geminiEligibleArticles
+        );
+
+        for (const [resultIndex, politicalBias] of politicalBiasResults.entries()) {
+          const articleIndex = geminiEligibleIndexes[resultIndex];
+          const article = articles[articleIndex];
+          const localSignals = localResults[articleIndex];
+
+          const bias = {
+            politicalLean: politicalBias.politicalLean,
+            sentiment: localSignals.sentiment,
+            emotionalTone: localSignals.emotionalTone,
+            biasScore: politicalBias.biasScore,
+          };
+
+          await updateArticleBias(article._id, bias);
+          analyzed++;
+        }
+      } catch (error) {
+        const reason = error.message || "Unknown Gemini batch analysis error";
+
+        for (const article of geminiEligibleArticles) {
+          console.error("Gemini batch bias analysis failed for article:", article._id, reason);
+          await markArticleBiasFailed(article._id, reason);
+          failures.push({
+            articleId: article._id,
+            error: reason,
+          });
+        }
       }
     }
 

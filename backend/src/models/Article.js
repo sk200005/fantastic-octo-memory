@@ -30,6 +30,10 @@ const articleSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  category: {
+    type: String,
+    default: ""
+  },
   image: {
     type: String,
     default: ""

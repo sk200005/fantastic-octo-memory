@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 
 const rssRoutes = require("./src/routes/rssRoutes");
+const newsRoutes = require("./src/routes/newsRoutes");
 const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
 const biasRoutes = require("./src/routes/biasRoutes");
@@ -27,6 +28,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/insight-ai")
   .catch(err => console.log(err));
 
 app.use("/api/rss", rssRoutes);
+app.use("/api/news", newsRoutes);
 app.use("/api/scraper", scraperRoutes);
 app.use("/api/articles", articleRoutes);
 app.use("/api/bias", biasRoutes);

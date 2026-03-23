@@ -27,7 +27,7 @@ display in frontend
 
 
 
-./.venv/bin/python -m uvicorn bias_pipeline:app --reload --port 9000
+uvicorn bias_pipeline:app --reload --port 9000
 npm run dev
 npm run dev
 
@@ -41,3 +41,13 @@ npm run dev
 ✅ models/gemini-2.0-flash-001
 ✅ models/gemini-flash-latest
 ✅ models/gemini-pro-latest
+
+
+
+1] Model: distilbert-base-uncased-finetuned-sst-2-english.
+--> classifies the overall "charge" of the text
+
+2] Model: j-hartmann/emotion-english-distilroberta-base
+--> seven emotions: Anger, Disgust, Fear, Joy, Neutral, Sadness, or Surprise.
+
+3] 

@@ -1,6 +1,16 @@
 import React from "react";
 import { getLeanColor, getSentimentColor, getBiasLevel } from "../utils/biasUtils";
 
+function formatCategory(category) {
+  if (!category) {
+    return "";
+  }
+
+  return category
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (letter) => letter.toUpperCase());
+}
+
 function ArticleCard({ article }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex items-start overflow-hidden border border-gray-200 hover:scale-[1.01]">
@@ -22,6 +32,14 @@ function ArticleCard({ article }) {
 
           <p className="text-sm text-gray-500 mb-3">
             <span className="font-medium">{article.source}</span>
+            {article.category && (
+              <>
+                <span className="mx-2">•</span>
+                <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                  {formatCategory(article.category)}
+                </span>
+              </>
+            )}
             <span className="mx-2">•</span>
             {new Date(article.publishedAt).toLocaleDateString()}
           </p>
