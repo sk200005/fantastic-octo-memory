@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const heroLogoSrc = encodeURI("/webLogo/Screenshot 2026-03-24 at 12.48.37 AM.png");
+
 const logoBadges = [
   {
     id: "bbc",
@@ -71,6 +73,13 @@ function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden bg-[#f7f6f2]">
       <div className="absolute inset-x-0 top-0 h-[40%] bg-[#495a6b]" />
+      <div className="absolute left-[8%] top-[7%] hidden lg:block">
+        <img
+          src={heroLogoSrc}
+          alt="InSight AI hero logo"
+          className="w-full max-w-[26rem] object-contain xl:max-w-[29rem]"
+        />
+      </div>
       <div className="absolute right-[18%] top-[76%] hidden text-[8rem] leading-none text-[#c7dcef] opacity-95 lg:block">"</div>
       <div className="absolute left-[51%] top-[46%] hidden text-[8rem] leading-none text-[#c7dcef] opacity-95 lg:block">"</div>
 
