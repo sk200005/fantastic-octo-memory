@@ -1,69 +1,69 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const heroLogoSrc = encodeURI("/webLogo/Screenshot 2026-03-24 at 12.48.37 AM.png");
+const heroLogoSrc = encodeURI("/webLogo/WebLogo.png");
 
 const logoBadges = [
   {
     id: "bbc",
     position: "top-[45%] left-[4%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy.png",
     alt: "BBC News",
   },
   {
     id: "hindu",
     position: "top-[58%] left-[13%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 2.png",
     alt: "The Hindu",
   },
   {
     id: "toi",
     position: "top-[79%] left-[5%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 3.png",
     alt: "Times of India",
   },
   {
     id: "cnn",
     position: "top-[84%] left-[31%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 4.png",
     alt: "CNN",
   },
   {
     id: "ht",
     position: "top-[49%] left-[33%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 5.png",
     alt: "Hindustan Times",
   },
   {
     id: "ndtv",
     position: "top-[42%] right-[23%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 6.png",
     alt: "NDTV 24x7",
   },
   {
     id: "indian-express",
     position: "top-[58%] right-[10%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 7.png",
     alt: "The Indian Express",
   },
   {
     id: "india-today",
     position: "top-[79%] right-[7%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 8.png",
     alt: "India Today",
   },
   {
     id: "wire",
     position: "top-[86%] right-[23%]",
-    shell: "h-28 w-28",
+    shell: "h-36 w-36 xl:h-40 xl:w-40",
     src: "/logos/image copy 9.png",
     alt: "The Wire",
   },
@@ -73,22 +73,19 @@ function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden bg-[#f7f6f2]">
       <div className="absolute inset-x-0 top-0 h-[40%] bg-[#495a6b]" />
-      <div className="absolute left-[8%] top-[7%] hidden lg:block">
+      <div className="absolute left-[3%] top-[7%] hidden lg:block">
         <img
           src={heroLogoSrc}
           alt="InSight AI hero logo"
-          className="w-full max-w-[26rem] object-contain xl:max-w-[29rem]"
+          className="w-full max-w-[32rem] object-contain xl:max-w-[36rem]"
         />
       </div>
-      <div className="absolute right-[18%] top-[76%] hidden text-[8rem] leading-none text-[#c7dcef] opacity-95 lg:block">"</div>
-      <div className="absolute left-[51%] top-[46%] hidden text-[8rem] leading-none text-[#c7dcef] opacity-95 lg:block">"</div>
-
       {logoBadges.map((badge) => (
         <div
           key={badge.id}
           className={`absolute hidden items-center justify-center rounded-full border-4 border-white/85 bg-white/70 shadow-[0_14px_30px_rgba(15,23,42,0.12)] lg:flex ${badge.position} ${badge.shell}`}
         >
-          <div className="relative h-[78%] w-[78%] overflow-hidden rounded-full bg-white">
+          <div className="relative h-[82%] w-[82%] overflow-hidden rounded-full bg-white">
             <img src={badge.src} alt={badge.alt} className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-white/45" />
           </div>
@@ -100,21 +97,23 @@ function HeroSection() {
 
         <div className="flex flex-col">
           <div className="pt-2 lg:pt-0">
-            <h1 className="max-w-4xl text-4xl font-black uppercase leading-[0.9] tracking-tight text-white sm:text-5xl lg:text-[4.9rem]">
-              THE FIRST AND ONLY
-              <span className="block text-[#9cc7ef]">SOCIAL MAGAZINE.</span>
+            <h1 className="max-w-4xl pl-6 text-[2.7rem] font-black uppercase leading-[0.9] tracking-tight text-white sm:pl-8 sm:text-[3.3rem] lg:pl-14 lg:text-[3.95rem]">
+              NEWS SUMMARISER  <br />
+              <span className="text-[#ebd469]">&amp;</span>
+              <span className="block text-[#9cc7ef]">BIAS  <br />  ANALYSIS</span>
             </h1>
           </div>
 
-          <div className="mt-8 rounded-[1.4rem] bg-[#35414f] px-5 py-3 shadow-[0_18px_44px_rgba(15,23,42,0.2)] sm:w-fit">
+          {/* <div className="mt-8 rounded-[1.4rem] bg-[#35414f] px-5 py-3 shadow-[0_18px_44px_rgba(15,23,42,0.2)] sm:w-fit">
             <p className="text-sm font-bold text-[#c2d6ea] sm:text-base">
               Read: Announcing Surf
             </p>
-          </div>
+          </div> */}
+          <br /><br /><br /><br /><br /><br /><br />
 
           <div className="mt-10 max-w-3xl pb-4 lg:mt-12 lg:ml-6">
             <p className="font-serif text-3xl font-black leading-[0.98] tracking-[-0.03em] text-[#1f2023] sm:text-4xl lg:text-[4rem]">
-              Where enthusiasts like you discover and share stories to connect in more meaningful ways.
+              The Best&nbsp;Platform  To Amplify  Your Content.
             </p>
 
             <div className="mt-7">

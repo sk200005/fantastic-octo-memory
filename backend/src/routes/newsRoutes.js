@@ -1,7 +1,10 @@
 const express = require("express");
 const { ingestArticles } = require("../services/rssIngestionService");
+const { getNewsArticles } = require("../controllers/articleController");
 
 const router = express.Router();
+
+router.get("/", getNewsArticles);
 
 router.get("/reload-news", async (req, res) => {
   try {

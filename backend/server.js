@@ -11,6 +11,8 @@ const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
 const biasRoutes = require("./src/routes/biasRoutes");
 const summarizationRoutes = require("./src/routes/summarizationRoutes");
+const analyticsRoutes = require("./src/routes/analyticsRoutes");
+const recommendRoutes = require("./src/routes/recommendRoutes");
 
 
 const app = express();
@@ -31,6 +33,8 @@ app.use("/api/rss", rssRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/scraper", scraperRoutes);
 app.use("/api/articles", articleRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/recommend", recommendRoutes);
 app.use("/api/bias", biasRoutes);
 app.use("/api/summarize", summarizationRoutes);
 

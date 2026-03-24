@@ -16,7 +16,7 @@ function shuffleFeeds(feeds) {
   return shuffled;
 }
 
-async function updateExistingArticleCategory(link, category, source) {
+async function updateExistingArticleCategory(link, sourceGroup, source) {
   const existingArticle = await Article.findOne({ link });
 
   if (!existingArticle) {
@@ -25,8 +25,8 @@ async function updateExistingArticleCategory(link, category, source) {
 
   let shouldSave = false;
 
-  if (!existingArticle.category) {
-    existingArticle.category = category;
+  if (!existingArticle.sourceGroup && sourceGroup) {
+    existingArticle.sourceGroup = sourceGroup;
     shouldSave = true;
   }
 
@@ -73,7 +73,7 @@ async function fetchArticleForCategory(selectedFeed) {
           title: item.title || "Untitled Article",
           link: item.link,
           source: feed.name,
-          category: selectedFeed.category,
+          sourceGroup: selectedFeed.category,
           publishedAt: item.pubDate || item.isoDate || new Date(),
           content: item.contentSnippet || item.content || "",
           image: item.enclosure?.url || "",

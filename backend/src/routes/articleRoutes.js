@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   getAllArticles,
-  getScrapedArticles
+  getScrapedArticles,
 } = require("../controllers/articleController");
 
 router.get("/", getAllArticles);

@@ -18,9 +18,24 @@ Article Excerpt:
 ${rawContent.slice(0, 1500)}`;
 }
 
+function buildFallbackLocalSignals(error) {
+  return {
+    sentiment: "Neutral",
+    emotionalTone: "Neutral",
+    explanation: error.message || "Local bias analysis unavailable",
+  };
+}
+
 async function analyzeSingleArticleBias(article) {
   const biasText = buildBiasText(article);
-  const localSignals = await analyzeLocalBiasSignals(biasText);
+  let localSignals;
+
+  try {
+    localSignals = await analyzeLocalBiasSignals(biasText);
+  } catch (error) {
+    localSignals = buildFallbackLocalSignals(error);
+  }
+
   const [politicalBias] = await analyzePoliticalBiasBatch([
     {
       title: article.title,
@@ -55,22 +70,18 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE) {
     const geminiEligibleIndexes = [];
 
     for (const [index, article] of articles.entries()) {
-      try {
-        const biasText = buildBiasText(article);
-        const localSignals = await analyzeLocalBiasSignals(biasText);
+      const biasText = buildBiasText(article);
 
-        localResults[index] = localSignals;
-        geminiEligibleArticles.push(article);
-        geminiEligibleIndexes.push(index);
+      try {
+        localResults[index] = await analyzeLocalBiasSignals(biasText);
       } catch (error) {
-        const reason = error.message || "Unknown bias analysis error";
-        console.error("Bias analysis failed for article:", article._id, reason);
-        await markArticleBiasFailed(article._id, reason);
-        failures.push({
-          articleId: article._id,
-          error: reason,
-        });
+        const reason = error.message || "Unknown local bias analysis error";
+        console.warn("Local bias analysis unavailable for article:", article._id, reason);
+        localResults[index] = buildFallbackLocalSignals(error);
       }
+
+      geminiEligibleArticles.push(article);
+      geminiEligibleIndexes.push(index);
     }
 
     if (geminiEligibleArticles.length > 0) {

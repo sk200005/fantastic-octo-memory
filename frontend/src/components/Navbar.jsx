@@ -1,12 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const navLogoSrc = encodeURI("/headLogo/Screenshot 2026-03-24 at 1.37.27 PM.png");
+
 function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] lg:px-10">
-        <Link to="/" className="text-xl font-black tracking-[0.22em] text-slate-900">
-          INSIGHT AI
+        <Link to="/" className="flex items-center">
+          <img
+            src={navLogoSrc}
+            alt="InSight AI"
+            className="h-auto w-full max-w-[7.75rem] object-contain"
+          />
         </Link>
 
         <nav className="hidden items-center gap-7 text-sm font-semibold text-slate-600 md:flex">

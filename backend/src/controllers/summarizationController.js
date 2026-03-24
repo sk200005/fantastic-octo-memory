@@ -31,6 +31,7 @@ async function summarizePendingArticles(req, res) {
         }
 
         article.summary = summary;
+        article.processingStatus = "analyzed";
         await article.save();
         summarized++;
       } catch (error) {

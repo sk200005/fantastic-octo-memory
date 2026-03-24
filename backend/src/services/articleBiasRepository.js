@@ -5,7 +5,7 @@ const DEFAULT_BATCH_SIZE = 5;
 async function fetchArticlesForBiasAnalysis(batchSize = DEFAULT_BATCH_SIZE) {
   return Article.find({
     summary: { $exists: true, $ne: "" },
-    processingStatus: "scraped",
+    processingStatus: { $in: ["scraped", "analyzed"] },
   })
     .sort({ publishedAt: -1 })
     .limit(batchSize);
@@ -17,10 +17,12 @@ async function updateArticleBias(articleId, bias) {
     {
       $set: {
         bias,
+        biasScore: bias.biasScore ?? 0,
+        sentiment: bias.sentiment || "neutral",
         processingStatus: "bias_analyzed",
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 }
 
@@ -29,11 +31,12 @@ async function markArticleBiasFailed(articleId, errorMessage) {
     articleId,
     {
       $set: {
-        processingStatus: "failed",
+        processingStatus: "analyzed",
+        sentiment: "neutral",
         "bias.explanation": errorMessage,
       },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 }
 

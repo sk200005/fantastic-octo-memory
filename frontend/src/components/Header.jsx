@@ -1,11 +1,15 @@
 import React from "react";
 
+const headerLogoSrc = encodeURI("/headLogo/Screenshot 2026-03-24 at 1.37.27 PM.png");
+
 function Header() {
   return (
     <div className="w-full px-16 pt-12 pb-6">
-      <h1 className="text-4xl font-bold text-white tracking-tight">
-        InSight AI
-      </h1>
+      <img
+        src={headerLogoSrc}
+        alt="InSight AI"
+        className="h-auto w-full max-w-[20rem] object-contain"
+      />
 
       <p className="text-gray-300 mt-2 text-sm">
         AI-powered news bias analysis and aggregation
