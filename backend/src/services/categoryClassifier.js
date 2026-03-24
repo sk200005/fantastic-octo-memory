@@ -7,11 +7,11 @@ const FEED_GROUP_CATEGORY_MAP = {
   },
   indianEconomy: {
     category: "economy",
-    subCategory: "Indian Economy",
+    subCategory: "Indian economy",
   },
   indianSports: {
     category: "sports",
-    subCategory: "Indian Sports",
+    subCategory: "Indian sports",
   },
   worldPolitics: {
     category: "politics",
@@ -19,11 +19,11 @@ const FEED_GROUP_CATEGORY_MAP = {
   },
   worldEconomy: {
     category: "economy",
-    subCategory: "World Economy",
+    subCategory: "World economy",
   },
   worldSports: {
     category: "sports",
-    subCategory: "World Sports",
+    subCategory: "World sports",
   },
 };
 

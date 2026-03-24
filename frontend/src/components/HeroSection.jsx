@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const heroLogoSrc = encodeURI("/webLogo/WebLogo.png");
+const heroLogoSrc = encodeURI("/webLogo/home.png");
 
 const logoBadges = [
   {
@@ -72,12 +72,12 @@ const logoBadges = [
 function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden bg-[#f7f6f2]">
-      <div className="absolute inset-x-0 top-0 h-[40%] bg-[#495a6b]" />
+      <div className="absolute inset-x-0 top-0 h-[40%] bg-[#304660]" />
       <div className="absolute left-[3%] top-[7%] hidden lg:block">
         <img
           src={heroLogoSrc}
           alt="InSight AI hero logo"
-          className="w-full max-w-[32rem] object-contain xl:max-w-[36rem]"
+          className="w-full max-w-[31rem] object-contain xl:max-w-[35rem]"
         />
       </div>
       {logoBadges.map((badge) => (

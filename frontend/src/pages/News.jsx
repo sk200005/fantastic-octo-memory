@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import ArticleCard from "../components/ArticleCard";
-import Header from "../components/Header";
+import Navbar from "../components/Navbar";
 
 const categories = [
   { label: "All", value: "all" },
@@ -15,20 +15,12 @@ const categories = [
   { label: "Entertainment", value: "entertainment" },
 ];
 
-function formatCategoryLabel(category) {
-  if (!category) {
-    return "General";
-  }
-
-  return category.charAt(0).toUpperCase() + category.slice(1);
-}
-
 function News() {
   const [articles, setArticles] = useState([]);
-  const [analytics, setAnalytics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [category, setCategory] = useState("all");
+  const [region, setRegion] = useState("all");
   const [sortOrder, setSortOrder] = useState("latest");
 
   const fetchArticles = async (selectedCategory = "all") => {
@@ -38,12 +30,27 @@ function News() {
     setArticles(res.data);
   };
 
-  const fetchAnalytics = async () => {
-    const res = await api.get("/analytics/category-bias");
-    setAnalytics(res.data);
-  };
+  const regionFilteredArticles = articles.filter((article) => {
+    if (region === "india") {
+      return [
+        "Indian Politics",
+        "Indian economy",
+        "Indian sports",
+      ].includes(article.subCategory);
+    }
 
-  const sortedArticles = [...articles].sort((firstArticle, secondArticle) => {
+    if (region === "world") {
+      return [
+        "World Politics",
+        "World economy",
+        "World sports",
+      ].includes(article.subCategory);
+    }
+
+    return true;
+  });
+
+  const sortedArticles = [...regionFilteredArticles].sort((firstArticle, secondArticle) => {
     const firstDate = new Date(firstArticle.publishedAt || 0).getTime();
     const secondDate = new Date(secondArticle.publishedAt || 0).getTime();
     const firstBias =
@@ -96,7 +103,7 @@ function News() {
         setStatusMessage("Articles loaded. Bias analysis is temporarily unavailable.");
       }
 
-      await Promise.all([fetchArticles(category), fetchAnalytics()]);
+      await fetchArticles(category);
 
       if (!biasUnavailable) {
         setStatusMessage("Articles reloaded successfully.");
@@ -108,19 +115,6 @@ function News() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        await fetchAnalytics();
-      } catch (error) {
-        console.error("Error fetching analytics:", error);
-        setStatusMessage("Could not load analytics.");
-      }
-    };
-
-    loadAnalytics();
-  }, []);
 
   useEffect(() => {
     const loadArticlesByCategory = async () => {
@@ -136,10 +130,10 @@ function News() {
   }, [category]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <Header />
+    <div className="min-h-screen bg-[linear-gradient(180deg,#283e58_0%,#1f3348_46%,#17283b_100%)]">
+      <Navbar />
 
-      <div className="w-full px-6 pb-16 pt-4 md:px-10 xl:px-16 space-y-6">
+      <div className="w-full px-6 pb-16 pt-8 md:px-10 xl:px-16 space-y-6">
         <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -147,11 +141,11 @@ function News() {
                 ADBMS Dashboard
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-white">
-                Filter, analyze, and relate news articles
+                Filter ○ Analyse ○ Relate
               </h1>
-              <p className="mt-2 text-sm text-gray-300 min-h-6">
+              {/* <p className="mt-2 text-sm text-gray-300 min-h-6">
                 {statusMessage || "Explore categories, bias analytics, and similarity-based recommendations."}
-              </p>
+              </p> */}
             </div>
 
             <button
@@ -164,20 +158,55 @@ function News() {
           </div>
 
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-3">
-              {categories.map((item) => (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-3">
+                {categories.map((item) => (
+                  <button
+                    key={item.value}
+                    onClick={() => setCategory(item.value)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      category === item.value
+                        ? "bg-cyan-400 text-slate-950"
+                        : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
                 <button
-                  key={item.value}
-                  onClick={() => setCategory(item.value)}
+                  onClick={() => setRegion("all")}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    category === item.value
-                      ? "bg-cyan-400 text-slate-950"
+                    region === "all"
+                      ? "bg-emerald-400 text-slate-950"
                       : "bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >
-                  {item.label}
+                  All Regions
                 </button>
-              ))}
+                <button
+                  onClick={() => setRegion("india")}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    region === "india"
+                      ? "bg-emerald-400 text-slate-950"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  India
+                </button>
+                <button
+                  onClick={() => setRegion("world")}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    region === "world"
+                      ? "bg-emerald-400 text-slate-950"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  World
+                </button>
+              </div>
             </div>
 
             <label className="flex items-center gap-3 text-sm text-gray-300">
@@ -195,32 +224,6 @@ function News() {
             </label>
           </div>
         </div>
-
-        <section className="rounded-3xl border border-white/10 bg-slate-950/40 p-6 shadow-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Category Bias Analytics</h2>
-            <p className="text-sm text-gray-400">Average bias score per category</p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {analytics.map((item) => (
-              <div
-                key={item.category}
-                className="rounded-2xl border border-cyan-400/20 bg-white/5 p-4"
-              >
-                <p className="text-sm font-medium uppercase tracking-wide text-cyan-300">
-                  {formatCategoryLabel(item.category)}
-                </p>
-                <p className="mt-3 text-3xl font-semibold text-white">
-                  {Number(item.avgBias || 0).toFixed(2)}
-                </p>
-                <p className="mt-1 text-sm text-gray-400">
-                  {item.totalArticles} articles
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         <section className="space-y-5">
           {sortedArticles.map((article) => (
