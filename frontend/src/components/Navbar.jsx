@@ -7,7 +7,7 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#F4F5F6] backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-2 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] lg:px-3">
-        <Link to="/" className="-ml-40 flex items-center lg:-ml-48">
+        <Link to="/" className="-ml-35 flex items-center lg:-ml-40">
           <img
             src={navLogoSrc}
             alt="InSight AI"

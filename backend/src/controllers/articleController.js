@@ -48,9 +48,7 @@ const getNewsArticles = async (req, res) => {
         ? req.query.category
         : undefined;
 
-    const query = {
-      processingStatus: { $in: ["bias_analyzed", "analyzed"] },
-    };
+    const query = {};
 
     if (category) {
       query.category = category;

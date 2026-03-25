@@ -15,6 +15,19 @@ const categories = [
   { label: "Entertainment", value: "entertainment" },
 ];
 
+function hasRenderableContent(article) {
+  const hasImage = Boolean(article.image?.trim());
+  const hasSummary = Boolean(article.summary?.trim());
+  const hasBiasAnalysis = Boolean(
+    article.bias?.biasScore !== undefined ||
+      article.bias?.politicalLean ||
+      article.bias?.sentiment ||
+      article.biasScore !== undefined
+  );
+
+  return hasImage || hasSummary || hasBiasAnalysis;
+}
+
 function News() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,25 +43,27 @@ function News() {
     setArticles(res.data);
   };
 
-  const regionFilteredArticles = articles.filter((article) => {
-    if (region === "india") {
-      return [
-        "Indian Politics",
-        "Indian economy",
-        "Indian sports",
-      ].includes(article.subCategory);
-    }
+  const regionFilteredArticles = articles
+    .filter((article) => {
+      if (region === "india") {
+        return [
+          "Indian Politics",
+          "Indian economy",
+          "Indian sports",
+        ].includes(article.subCategory);
+      }
 
-    if (region === "world") {
-      return [
-        "World Politics",
-        "World economy",
-        "World sports",
-      ].includes(article.subCategory);
-    }
+      if (region === "world") {
+        return [
+          "World Politics",
+          "World economy",
+          "World sports",
+        ].includes(article.subCategory);
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .filter(hasRenderableContent);
 
   const sortedArticles = [...regionFilteredArticles].sort((firstArticle, secondArticle) => {
     const firstDate = new Date(firstArticle.publishedAt || 0).getTime();
@@ -77,12 +92,17 @@ function News() {
     return secondDate - firstDate;
   });
 
+  const articleCountLabel =
+    region === "all" && category === "all"
+      ? `${sortedArticles.length} total articles shown`
+      : `${sortedArticles.length} articles shown`;
+
   const reloadArticles = async () => {
     try {
       let biasUnavailable = false;
 
       setLoading(true);
-      setStatusMessage("Fetching 6 balanced articles from rotating RSS sources...");
+      setStatusMessage("Fetching 4 fresh articles from rotating RSS sources...");
       await api.get("/news/reload-news");
 
       setStatusMessage("Scraping pending articles...");
@@ -143,9 +163,13 @@ function News() {
               <h1 className="mt-2 text-3xl font-semibold text-white">
                 Filter ○ Analyse ○ Relate
               </h1>
-              {/* <p className="mt-2 text-sm text-gray-300 min-h-6">
-                {statusMessage || "Explore categories, bias analytics, and similarity-based recommendations."}
-              </p> */}
+              <p className="mt-2 min-h-6 text-sm text-gray-300">
+                {statusMessage ||
+                  "Explore categories, bias analytics, and similarity-based recommendations."}
+              </p>
+              <p className="mt-3 text-sm font-medium text-cyan-200">
+                {articleCountLabel}
+              </p>
             </div>
 
             <button
@@ -226,9 +250,15 @@ function News() {
         </div>
 
         <section className="space-y-5">
-          {sortedArticles.map((article) => (
-            <ArticleCard key={article._id} article={article} />
-          ))}
+          {sortedArticles.length > 0 ? (
+            sortedArticles.map((article) => (
+              <ArticleCard key={article._id} article={article} />
+            ))
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-8 text-center text-sm text-gray-200">
+              No articles match the current filters yet.
+            </div>
+          )}
         </section>
       </div>
     </div>

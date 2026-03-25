@@ -4,6 +4,7 @@ const { rssFeeds } = require("../config/rssFeeds");
 const { selectFeedsForCycle } = require("./feedSelector");
 
 const parser = new Parser();
+const TARGET_ARTICLE_BATCH_SIZE = 4;
 
 function shuffleFeeds(feeds) {
   const shuffled = [...feeds];
@@ -91,15 +92,133 @@ async function fetchArticleForCategory(selectedFeed) {
   return null;
 }
 
+function createCategoryFetcher(selectedFeed) {
+  let started = false;
+  let exhausted = false;
+  let feedCursor = 0;
+  let itemCursor = 0;
+  let feedsToTry = [];
+  let currentItems = [];
+  let currentFeed = null;
+
+  async function loadCurrentFeedItems() {
+    while (feedCursor < feedsToTry.length) {
+      const feed = feedsToTry[feedCursor];
+      feedCursor += 1;
+
+      try {
+        const parsedFeed = await parser.parseURL(feed.url);
+        currentFeed = feed;
+        currentItems = parsedFeed.items || [];
+        itemCursor = 0;
+        return;
+      } catch (error) {
+        console.error(`RSS fetch error for ${feed.name}:`, error.message);
+      }
+    }
+
+    exhausted = true;
+  }
+
+  return {
+    get category() {
+      return selectedFeed.category;
+    },
+    async nextArticle() {
+      if (exhausted) {
+        return null;
+      }
+
+      if (!started) {
+        const categoryFeeds = rssFeeds[selectedFeed.category] || [];
+        const alternateFeeds = shuffleFeeds(
+          categoryFeeds.filter((feed) => feed.url !== selectedFeed.url)
+        );
+
+        feedsToTry = [selectedFeed, ...alternateFeeds];
+        started = true;
+      }
+
+      while (!exhausted) {
+        if (itemCursor >= currentItems.length) {
+          await loadCurrentFeedItems();
+
+          if (exhausted) {
+            return null;
+          }
+        }
+
+        const item = currentItems[itemCursor];
+        itemCursor += 1;
+
+        if (!item?.link) {
+          continue;
+        }
+
+        const alreadyExists = await updateExistingArticleCategory(
+          item.link,
+          selectedFeed.category,
+          currentFeed?.name || selectedFeed.name
+        );
+
+        if (alreadyExists) {
+          continue;
+        }
+
+        const article = new Article({
+          title: item.title || "Untitled Article",
+          link: item.link,
+          source: currentFeed?.name || selectedFeed.name,
+          sourceGroup: selectedFeed.category,
+          publishedAt: item.pubDate || item.isoDate || new Date(),
+          content: item.contentSnippet || item.content || "",
+          image: item.enclosure?.url || "",
+          processingStatus: "pending",
+        });
+
+        await article.save();
+        return article;
+      }
+
+      return null;
+    },
+  };
+}
+
 async function ingestArticles() {
   const selectedFeeds = selectFeedsForCycle(rssFeeds);
   const savedArticles = [];
+  const fetchers = selectedFeeds.map((feed) => createCategoryFetcher(feed));
+  let activeFetchers = [...fetchers];
 
-  for (const feed of selectedFeeds) {
-    const article = await fetchArticleForCategory(feed);
+  while (
+    activeFetchers.length > 0 &&
+    savedArticles.length < TARGET_ARTICLE_BATCH_SIZE
+  ) {
+    let roundAddedArticle = false;
+    const nextActiveFetchers = [];
 
-    if (article) {
-      savedArticles.push(article);
+    for (const fetcher of activeFetchers) {
+      const article = await fetcher.nextArticle();
+
+      if (article) {
+        savedArticles.push(article);
+        roundAddedArticle = true;
+      }
+
+      if (savedArticles.length >= TARGET_ARTICLE_BATCH_SIZE) {
+        break;
+      }
+
+      if (article !== null) {
+        nextActiveFetchers.push(fetcher);
+      }
+    }
+
+    activeFetchers = nextActiveFetchers;
+
+    if (!roundAddedArticle && activeFetchers.length === 0) {
+      break;
     }
   }
 

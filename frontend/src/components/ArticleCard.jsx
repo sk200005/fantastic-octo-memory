@@ -12,10 +12,30 @@ function formatCategory(category) {
     .replace(/^./, (letter) => letter.toUpperCase());
 }
 
+function getPreviewText(article) {
+  const summary = article.summary?.trim();
+  if (summary) {
+    return summary;
+  }
+
+  const rawContent = article.rawContent?.trim();
+  if (rawContent) {
+    return `${rawContent.slice(0, 120)}...`;
+  }
+
+  const content = article.content?.trim();
+  if (content) {
+    return `${content.slice(0, 120)}...`;
+  }
+
+  return "";
+}
+
 function ArticleCard({ article }) {
   const biasScore = article.bias?.biasScore ?? article.biasScore;
   const sentiment = article.bias?.sentiment ?? article.sentiment;
   const politicalLean = article.bias?.politicalLean;
+  const previewText = getPreviewText(article);
   const [recommendations, setRecommendations] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
@@ -76,9 +96,11 @@ function ArticleCard({ article }) {
               {new Date(article.publishedAt).toLocaleDateString()}
             </p>
 
-            <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
-              {article.summary || `${article.rawContent?.slice(0, 120) || ""}...`}
-            </p>
+            {previewText ? (
+              <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
+                {previewText}
+              </p>
+            ) : null}
           </div>
 
           <div className="lg:min-w-[370px] flex flex-col gap-5 lg:items-end lg:justify-between">

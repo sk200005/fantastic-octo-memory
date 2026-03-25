@@ -1,4 +1,16 @@
 const lastSelectedSources = new Map();
+const FEEDS_PER_CYCLE = 4;
+
+function shuffleList(items) {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
 
 function randomFeed(group) {
   const index = Math.floor(Math.random() * group.length);
@@ -17,7 +29,7 @@ function rotateFeed(group, category) {
 }
 
 function selectFeedsForCycle(feeds) {
-  return [
+  const groupedFeeds = [
     { ...rotateFeed(feeds.indianPolitics, "indianPolitics"), category: "indianPolitics" },
     { ...rotateFeed(feeds.indianEconomy, "indianEconomy"), category: "indianEconomy" },
     { ...rotateFeed(feeds.indianSports, "indianSports"), category: "indianSports" },
@@ -25,6 +37,8 @@ function selectFeedsForCycle(feeds) {
     { ...rotateFeed(feeds.worldEconomy, "worldEconomy"), category: "worldEconomy" },
     { ...rotateFeed(feeds.worldSports, "worldSports"), category: "worldSports" },
   ];
+
+  return shuffleList(groupedFeeds).slice(0, FEEDS_PER_CYCLE);
 }
 
-module.exports = { randomFeed, selectFeedsForCycle };
+module.exports = { FEEDS_PER_CYCLE, randomFeed, selectFeedsForCycle };

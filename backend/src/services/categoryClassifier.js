@@ -214,6 +214,10 @@ const LEGACY_SOURCE_GROUP_MAP = {
   worldsports: "worldSports",
 };
 
+const SOURCE_NAME_ALIASES = {
+  "bbc news": "worldPolitics",
+};
+
 const SOURCE_NAME_TO_GROUP = Object.entries(rssFeeds).reduce(
   (mapping, [group, feeds]) => {
     for (const feed of feeds) {
@@ -279,7 +283,13 @@ function inferSourceGroup(source = "", existingSourceGroup = "") {
     return normalizedExistingSourceGroup;
   }
 
-  return SOURCE_NAME_TO_GROUP[source.toLowerCase()] || "";
+  const normalizedSource = source.toLowerCase();
+
+  return (
+    SOURCE_NAME_TO_GROUP[normalizedSource] ||
+    SOURCE_NAME_ALIASES[normalizedSource] ||
+    ""
+  );
 }
 
 function classifyWithoutSourceGroup(text) {
