@@ -4,7 +4,7 @@ const { rssFeeds } = require("../config/rssFeeds");
 const { selectFeedsForCycle } = require("./feedSelector");
 
 const parser = new Parser();
-const TARGET_ARTICLE_BATCH_SIZE = 4;
+const TARGET_ARTICLE_BATCH_SIZE = 3;
 
 function shuffleFeeds(feeds) {
   const shuffled = [...feeds];

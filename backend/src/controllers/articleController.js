@@ -10,7 +10,7 @@ const getAllArticles = async (req, res) => {
     const query = category ? { category } : {};
 
     const articles = await Article.find(query)
-      .sort({ publishedAt: -1 });
+      .sort({ createdAt: -1, publishedAt: -1 });
 
     res.status(200).json(articles);
   } catch (error) {
@@ -33,7 +33,7 @@ const getScrapedArticles = async (req, res) => {
       query.category = category;
     }
 
-    const articles = await Article.find(query).sort({ publishedAt: -1 });
+    const articles = await Article.find(query).sort({ createdAt: -1, publishedAt: -1 });
 
     res.status(200).json(articles);
   } catch (error) {
@@ -47,14 +47,22 @@ const getNewsArticles = async (req, res) => {
       req.query.category && req.query.category !== "all"
         ? req.query.category
         : undefined;
-
-    const query = {};
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
+    const query = {
+      processingStatus: { $in: ["scraped", "analyzed", "bias_analyzed"] },
+    };
 
     if (category) {
       query.category = category;
     }
 
-    const articles = await Article.find(query).sort({ publishedAt: -1 });
+    let articleQuery = Article.find(query).sort({ createdAt: -1, publishedAt: -1 });
+
+    if (Number.isFinite(requestedLimit) && requestedLimit > 0) {
+      articleQuery = articleQuery.limit(requestedLimit);
+    }
+
+    const articles = await articleQuery;
 
     res.status(200).json(articles);
   } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import api from "../api/axios";
 import { getLeanColor, getSentimentColor, getBiasLevel } from "../utils/biasUtils";
 
@@ -62,7 +62,7 @@ function ArticleCard({ article }) {
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-200 hover:scale-[1.01] cursor-pointer"
+      className="deferred-card cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_8px_22px_rgba(15,23,42,0.08)] transition-transform duration-300 hover:scale-[1.01]"
       onClick={handleCardClick}
     >
       <div className="flex flex-col items-stretch sm:flex-row">
@@ -72,6 +72,8 @@ function ArticleCard({ article }) {
               src={article.image}
               alt={article.title}
               className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         )}
@@ -178,4 +180,4 @@ function ArticleCard({ article }) {
   );
 }
 
-export default ArticleCard;
+export default memo(ArticleCard);

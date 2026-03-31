@@ -1,14 +1,22 @@
 const Article = require("../models/Article");
 const { summarizeArticle } = require("../services/summarizationService");
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 3;
 
 async function summarizePendingArticles(req, res) {
   try {
-    const articles = await Article.find({
+    const articleIds = Array.isArray(req.body?.articleIds) ? req.body.articleIds : [];
+    const query = {
       rawContent: { $exists: true, $ne: "" },
       summary: "",
-    })
+      processingStatus: "scraped",
+    };
+
+    if (articleIds.length > 0) {
+      query._id = { $in: articleIds };
+    }
+
+    const articles = await Article.find(query)
       .sort({ publishedAt: -1 })
       .limit(BATCH_SIZE);
 
@@ -21,6 +29,7 @@ async function summarizePendingArticles(req, res) {
     }
 
     let summarized = 0;
+    const summarizedArticleIds = [];
 
     for (const article of articles) {
       try {
@@ -34,6 +43,7 @@ async function summarizePendingArticles(req, res) {
         article.processingStatus = "analyzed";
         await article.save();
         summarized++;
+        summarizedArticleIds.push(String(article._id));
       } catch (error) {
         console.error("Summarization failed for article:", article._id, error.message);
       }
@@ -45,6 +55,7 @@ async function summarizePendingArticles(req, res) {
       summarized,
       attempted: articles.length,
       batchSize: BATCH_SIZE,
+      articleIds: summarizedArticleIds,
     });
   } catch (error) {
     console.error("Summarization controller error:", error);

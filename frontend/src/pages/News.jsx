@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 import ArticleCard from "../components/ArticleCard";
 import Navbar from "../components/Navbar";
@@ -14,6 +14,8 @@ const categories = [
   { label: "World", value: "world" },
   { label: "Entertainment", value: "entertainment" },
 ];
+const TARGET_COMPLETED_BATCH_SIZE = 3;
+const MAX_RELOAD_ATTEMPTS = 4;
 
 function hasRenderableContent(article) {
   const hasImage = Boolean(article.image?.trim());
@@ -26,6 +28,22 @@ function hasRenderableContent(article) {
   );
 
   return hasImage || hasSummary || hasBiasAnalysis;
+}
+
+function getApiErrorMessage(error) {
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+
+  if (error.code === "ERR_NETWORK") {
+    return "Could not connect to the backend at http://localhost:8000.";
+  }
+
+  return error.message || "Unknown error";
 }
 
 function News() {
@@ -43,94 +61,211 @@ function News() {
     setArticles(res.data);
   };
 
-  const regionFilteredArticles = articles
-    .filter((article) => {
-      if (region === "india") {
-        return [
-          "Indian Politics",
-          "Indian economy",
-          "Indian sports",
-        ].includes(article.subCategory);
-      }
+  const regionFilteredArticles = useMemo(
+    () =>
+      articles
+        .filter((article) => {
+          if (region === "india") {
+            return [
+              "Indian Politics",
+              "Indian economy",
+              "Indian sports",
+            ].includes(article.subCategory);
+          }
 
-      if (region === "world") {
-        return [
-          "World Politics",
-          "World economy",
-          "World sports",
-        ].includes(article.subCategory);
-      }
+          if (region === "world") {
+            return [
+              "World Politics",
+              "World economy",
+              "World sports",
+            ].includes(article.subCategory);
+          }
 
-      return true;
-    })
-    .filter(hasRenderableContent);
+          return true;
+        })
+        .filter(hasRenderableContent),
+    [articles, region]
+  );
 
-  const sortedArticles = [...regionFilteredArticles].sort((firstArticle, secondArticle) => {
-    const firstDate = new Date(firstArticle.publishedAt || 0).getTime();
-    const secondDate = new Date(secondArticle.publishedAt || 0).getTime();
-    const firstBias =
-      typeof (firstArticle.bias?.biasScore ?? firstArticle.biasScore) === "number"
-        ? (firstArticle.bias?.biasScore ?? firstArticle.biasScore)
-        : Number(firstArticle.bias?.biasScore ?? firstArticle.biasScore) || 0;
-    const secondBias =
-      typeof (secondArticle.bias?.biasScore ?? secondArticle.biasScore) === "number"
-        ? (secondArticle.bias?.biasScore ?? secondArticle.biasScore)
-        : Number(secondArticle.bias?.biasScore ?? secondArticle.biasScore) || 0;
+  const sortedArticles = useMemo(
+    () =>
+      [...regionFilteredArticles].sort((firstArticle, secondArticle) => {
+        const firstCreatedAt = new Date(
+          firstArticle.createdAt || firstArticle.publishedAt || 0
+        ).getTime();
+        const secondCreatedAt = new Date(
+          secondArticle.createdAt || secondArticle.publishedAt || 0
+        ).getTime();
+        const firstBias =
+          typeof (firstArticle.bias?.biasScore ?? firstArticle.biasScore) === "number"
+            ? (firstArticle.bias?.biasScore ?? firstArticle.biasScore)
+            : Number(firstArticle.bias?.biasScore ?? firstArticle.biasScore) || 0;
+        const secondBias =
+          typeof (secondArticle.bias?.biasScore ?? secondArticle.biasScore) === "number"
+            ? (secondArticle.bias?.biasScore ?? secondArticle.biasScore)
+            : Number(secondArticle.bias?.biasScore ?? secondArticle.biasScore) || 0;
 
-    if (sortOrder === "oldest") {
-      return firstDate - secondDate;
-    }
+        if (sortOrder === "oldest") {
+          return firstCreatedAt - secondCreatedAt;
+        }
 
-    if (sortOrder === "most-biased") {
-      return secondBias - firstBias;
-    }
+        if (sortOrder === "most-biased") {
+          return secondBias - firstBias;
+        }
 
-    if (sortOrder === "least-biased") {
-      return firstBias - secondBias;
-    }
+        if (sortOrder === "least-biased") {
+          return firstBias - secondBias;
+        }
 
-    return secondDate - firstDate;
-  });
+        return secondCreatedAt - firstCreatedAt;
+      }),
+    [regionFilteredArticles, sortOrder]
+  );
 
-  const articleCountLabel =
-    region === "all" && category === "all"
-      ? `${sortedArticles.length} total articles shown`
-      : `${sortedArticles.length} articles shown`;
+  const articleCountLabel = useMemo(
+    () =>
+      region === "all" && category === "all"
+        ? `${sortedArticles.length} total articles shown`
+        : `${sortedArticles.length} articles shown`,
+    [category, region, sortedArticles.length]
+  );
 
   const reloadArticles = async () => {
+    const runStep = async (label, request, { optional = false } = {}) => {
+      try {
+        const response = await request();
+
+        if (response?.data?.success === false) {
+          throw new Error(response.data.error || response.data.message || `${label} failed.`);
+        }
+
+        return { ok: true, response };
+      } catch (error) {
+        const message = getApiErrorMessage(error);
+
+        if (optional) {
+          console.error(`${label} failed:`, error);
+          return { ok: false, message };
+        }
+
+        throw new Error(`${label} failed: ${message}`);
+      }
+    };
+
     try {
-      let biasUnavailable = false;
+      const optionalFailures = [];
+      const completedArticleIds = new Set();
+      const attemptedIngestedIds = new Set();
+      let reloadAttempt = 0;
 
       setLoading(true);
-      setStatusMessage("Fetching 4 fresh articles from rotating RSS sources...");
-      await api.get("/news/reload-news");
+      while (
+        completedArticleIds.size < TARGET_COMPLETED_BATCH_SIZE &&
+        reloadAttempt < MAX_RELOAD_ATTEMPTS
+      ) {
+        reloadAttempt += 1;
 
-      setStatusMessage("Scraping pending articles...");
-      await api.post("/scraper/run");
+        setStatusMessage(
+          `Fetching fresh articles (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+        );
+        const reloadResult = await runStep("RSS reload", () => api.get("/news/reload-news"));
+        const ingestedArticleIds =
+          reloadResult.response?.data?.articles
+            ?.map((article) => article._id)
+            .filter((articleId) => {
+              if (!articleId || attemptedIngestedIds.has(articleId)) {
+                return false;
+              }
 
-      setStatusMessage("Generating article summaries...");
-      await api.post("/summarize");
+              attemptedIngestedIds.add(articleId);
+              return true;
+            }) || [];
 
-      setStatusMessage("Refreshing article list...");
-      await fetchArticles(category);
+        if (ingestedArticleIds.length === 0) {
+          optionalFailures.push("No new unique articles were available from the RSS sources.");
+          continue;
+        }
 
-      try {
-        setStatusMessage("Analyzing news bias...");
-        await api.post("/bias/run");
-      } catch (error) {
-        biasUnavailable = true;
-        console.error("Bias analysis step failed:", error);
-        setStatusMessage("Articles loaded. Bias analysis is temporarily unavailable.");
+        setStatusMessage(
+          `Scraping batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+        );
+        let scrapedArticleIds = [];
+        {
+          const result = await runStep(
+            "Scraping",
+            () => api.post("/scraper/run", { articleIds: ingestedArticleIds }),
+            { optional: true }
+          );
+
+          if (!result.ok) {
+            optionalFailures.push(result.message);
+          } else {
+            scrapedArticleIds = result.response?.data?.articleIds || [];
+          }
+        }
+
+        if (scrapedArticleIds.length === 0) {
+          continue;
+        }
+
+        setStatusMessage(
+          `Generating summaries for batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+        );
+        let summarizedArticleIds = [];
+        {
+          const result = await runStep(
+            "Summarization",
+            () => api.post("/summarize", { articleIds: scrapedArticleIds }),
+            { optional: true }
+          );
+
+          if (!result.ok) {
+            optionalFailures.push(result.message);
+          } else {
+            summarizedArticleIds = result.response?.data?.articleIds || [];
+          }
+        }
+
+        if (summarizedArticleIds.length === 0) {
+          continue;
+        }
+
+        setStatusMessage(
+          `Analyzing bias for batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+        );
+        {
+          const result = await runStep(
+            "Bias analysis",
+            () => api.post("/bias/run", { articleIds: summarizedArticleIds }),
+            { optional: true }
+          );
+
+          if (!result.ok) {
+            optionalFailures.push(result.message);
+          } else {
+            (result.response?.data?.articleIds || []).forEach((articleId) => {
+              if (articleId) {
+                completedArticleIds.add(articleId);
+              }
+            });
+          }
+        }
       }
 
       await fetchArticles(category);
 
-      if (!biasUnavailable) {
-        setStatusMessage("Articles reloaded successfully.");
+      if (completedArticleIds.size >= TARGET_COMPLETED_BATCH_SIZE) {
+        setStatusMessage("3 articles reloaded, analyzed, and displayed successfully.");
+      } else if (optionalFailures.length > 0) {
+        setStatusMessage(`Articles loaded with partial issues: ${optionalFailures[0]}`);
+      } else {
+        setStatusMessage(
+          `Reload completed with ${completedArticleIds.size} fully analyzed article(s).`
+        );
       }
     } catch (error) {
       console.error("Pipeline error:", error);
-      setStatusMessage("Reload failed. Check backend logs.");
+      setStatusMessage(error.message || "Reload failed.");
     } finally {
       setLoading(false);
     }
@@ -154,7 +289,7 @@ function News() {
       <Navbar />
 
       <div className="w-full px-6 pb-16 pt-8 md:px-10 xl:px-16 space-y-6">
-        <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-sm">
+        <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.14)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">

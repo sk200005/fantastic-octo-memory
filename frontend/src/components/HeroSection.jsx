@@ -71,22 +71,30 @@ const logoBadges = [
 
 function HeroSection() {
   return (
-    <section id="top" className="relative overflow-hidden bg-[#f7f6f2]">
+    <section id="top" className="relative overflow-x-hidden overflow-y-visible bg-[#f7f6f2]">
       <div className="absolute inset-x-0 top-0 h-[40%] bg-[#304660]" />
       <div className="absolute left-[3%] top-[7%] hidden lg:block">
         <img
           src={heroLogoSrc}
           alt="InSight AI hero logo"
           className="w-full max-w-[31rem] object-contain xl:max-w-[35rem]"
+          decoding="async"
+          fetchPriority="high"
         />
       </div>
       {logoBadges.map((badge) => (
         <div
           key={badge.id}
-          className={`absolute hidden items-center justify-center rounded-full border-4 border-white/85 bg-white/70 shadow-[0_14px_30px_rgba(15,23,42,0.12)] lg:flex ${badge.position} ${badge.shell}`}
+          className={`absolute hidden items-center justify-center rounded-full border-4 border-white/85 bg-white/70 shadow-[0_8px_18px_rgba(15,23,42,0.08)] lg:flex ${badge.position} ${badge.shell}`}
         >
           <div className="relative h-[82%] w-[82%] overflow-hidden rounded-full bg-white">
-            <img src={badge.src} alt={badge.alt} className="h-full w-full object-cover" />
+            <img
+              src={badge.src}
+              alt={badge.alt}
+              className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
             <div className="absolute inset-0 bg-white/45" />
           </div>
         </div>
@@ -97,10 +105,16 @@ function HeroSection() {
 
         <div className="flex flex-col">
           <div className="pt-2 lg:pt-0">
-            <h1 className="max-w-4xl pl-6 text-[2.7rem] font-black uppercase leading-[0.9] tracking-tight text-white sm:pl-8 sm:text-[3.3rem] lg:pl-14 lg:text-[3.95rem]">
-              NEWS SUMMARISER  <br />
-              <span className="text-[#ebd469]">&amp;</span>
-              <span className="block text-[#9cc7ef]">BIAS  <br />  ANALYSIS</span>
+            <h1 className="hero-title max-w-4xl pl-6 text-[2.7rem] font-black uppercase leading-[0.9] tracking-tight text-white sm:pl-8 sm:text-[3.3rem] lg:pl-14 lg:text-[3.95rem]">
+              <span>NEWS</span>
+              <span>SUMMARISER</span>
+              <span>
+                <span className="text-[#ebd469]">&amp;</span>
+                <span className="hero-title-accent text-[#9cc7ef]">
+                  <span>BIAS</span>
+                  <span>ANALYSIS</span>
+                </span>
+              </span>
             </h1>
           </div>
 
@@ -112,14 +126,14 @@ function HeroSection() {
           <br /><br /><br /><br /><br /><br /><br />
 
           <div className="mt-10 max-w-3xl pb-4 lg:mt-12 lg:ml-6">
-            <p className="font-serif text-3xl font-black leading-[0.98] tracking-[-0.03em] text-[#1f2023] sm:text-4xl lg:text-[4rem]">
+            <p className="hero-subtitle font-serif text-3xl font-black leading-[0.98] tracking-[-0.03em] text-[#1f2023] sm:text-4xl lg:text-[4rem]">
               The Best&nbsp;Platform  To Amplify  Your Content.
             </p>
 
             <div className="mt-7">
               <Link
                 to="/news"
-                className="inline-flex rounded-full bg-[#1f2023] px-7 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[0_20px_40px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 sm:text-sm"
+                className="inline-flex rounded-full bg-[#1f2023] px-7 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:bg-slate-800 sm:text-sm"
               >
                 Explore News
               </Link>

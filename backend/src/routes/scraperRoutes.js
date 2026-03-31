@@ -4,7 +4,7 @@ const router = express.Router();
 const scrapeArticles = require("../services/scraperService");
 
 router.post("/run", async (req, res) => {
-  const result = await scrapeArticles();
+  const result = await scrapeArticles(req.body?.articleIds);
   res.json(result);
 });
 

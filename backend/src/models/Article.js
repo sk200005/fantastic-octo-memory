@@ -67,8 +67,12 @@ const articleSchema = new mongoose.Schema({
     politicalLean: String,
     sentiment: String,
     biasScore: Number,
+    biasScoreFinal: Number,
     emotionalTone: String,
-    explanation: String
+    explanation: String,
+    loadedWords: [String],
+    emotionalLanguage: [String],
+    opposingViewsPresent: Boolean
   }
 
 
@@ -90,7 +94,9 @@ articleSchema.pre("save", function setDerivedArticleFields() {
   this.subCategory = categorized.subCategory;
   this.sourceGroup = categorized.sourceGroup;
 
-  if (this.bias?.biasScore !== undefined && this.bias?.biasScore !== null) {
+  if (this.bias?.biasScoreFinal !== undefined && this.bias?.biasScoreFinal !== null) {
+    this.biasScore = this.bias.biasScoreFinal;
+  } else if (this.bias?.biasScore !== undefined && this.bias?.biasScore !== null) {
     this.biasScore = this.bias.biasScore;
   }
 

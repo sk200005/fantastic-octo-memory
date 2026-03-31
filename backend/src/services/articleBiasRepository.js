@@ -1,12 +1,18 @@
 const Article = require("../models/Article");
 
-const DEFAULT_BATCH_SIZE = 5;
+const DEFAULT_BATCH_SIZE = 3;
 
-async function fetchArticlesForBiasAnalysis(batchSize = DEFAULT_BATCH_SIZE) {
-  return Article.find({
+async function fetchArticlesForBiasAnalysis(batchSize = DEFAULT_BATCH_SIZE, articleIds = []) {
+  const query = {
     summary: { $exists: true, $ne: "" },
     processingStatus: { $in: ["scraped", "analyzed"] },
-  })
+  };
+
+  if (Array.isArray(articleIds) && articleIds.length > 0) {
+    query._id = { $in: articleIds };
+  }
+
+  return Article.find(query)
     .sort({ publishedAt: -1 })
     .limit(batchSize);
 }
@@ -17,7 +23,7 @@ async function updateArticleBias(articleId, bias) {
     {
       $set: {
         bias,
-        biasScore: bias.biasScore ?? 0,
+        biasScore: bias.biasScoreFinal ?? bias.biasScore ?? 0,
         sentiment: bias.sentiment || "neutral",
         processingStatus: "bias_analyzed",
       },

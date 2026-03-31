@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 
 function formatCategoryLabel(category) {
@@ -25,23 +25,34 @@ function CategoryBiasAnalyticsSection({ className = "" }) {
     loadAnalytics();
   }, []);
 
-  const sortedAnalytics = [...analytics].sort(
-    (firstItem, secondItem) => Number(secondItem.avgBias || 0) - Number(firstItem.avgBias || 0)
+  const sortedAnalytics = useMemo(
+    () =>
+      [...analytics].sort(
+        (firstItem, secondItem) => Number(secondItem.avgBias || 0) - Number(firstItem.avgBias || 0)
+      ),
+    [analytics]
   );
   const highestBiasCategory = sortedAnalytics[0];
-  const mostCoveredCategory = [...analytics].sort(
-    (firstItem, secondItem) => (secondItem.totalArticles || 0) - (firstItem.totalArticles || 0)
-  )[0];
-  const averageBiasAcrossCategories =
-    analytics.length > 0
-      ? analytics.reduce((total, item) => total + Number(item.avgBias || 0), 0) / analytics.length
-      : 0;
+  const mostCoveredCategory = useMemo(
+    () =>
+      [...analytics].sort(
+        (firstItem, secondItem) => (secondItem.totalArticles || 0) - (firstItem.totalArticles || 0)
+      )[0],
+    [analytics]
+  );
+  const averageBiasAcrossCategories = useMemo(
+    () =>
+      analytics.length > 0
+        ? analytics.reduce((total, item) => total + Number(item.avgBias || 0), 0) / analytics.length
+        : 0,
+    [analytics]
+  );
   const averageBiasPercentage = Math.round(averageBiasAcrossCategories * 100);
 
   return (
     <section
       id="bias-analytics"
-      className={`rounded-[2rem] border border-[#48637f] bg-[linear-gradient(135deg,#374e68_0%,#425a75_55%,#4d6784_100%)] p-5 shadow-[0_24px_48px_rgba(43,60,79,0.18)] ${className}`.trim()}
+      className={`deferred-section rounded-[2rem] border border-[#48637f] bg-[linear-gradient(135deg,#374e68_0%,#425a75_55%,#4d6784_100%)] p-5 shadow-[0_14px_28px_rgba(43,60,79,0.14)] ${className}`.trim()}
     >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold text-[#fbf8f1]">Category Bias Analytics</h2>
