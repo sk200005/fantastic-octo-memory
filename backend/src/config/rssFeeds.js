@@ -18,13 +18,13 @@ const rssFeeds = {
     { name: "BBC World", url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
     { name: "Guardian World", url: "https://www.theguardian.com/world/rss" },
   ],
-  // worldEconomy: [
-  //   { name: "BBC Business", url: "https://feeds.bbci.co.uk/news/business/rss.xml" },
-  // ],
-  // worldSports: [
-  //   { name: "BBC Sport", url: "https://feeds.bbci.co.uk/sport/rss.xml" },
-  //   { name: "Reuters Sports", url: "https://www.reuters.com/lifestyle/sports/rss" },
-  // ],
+  worldEconomy: [
+    { name: "BBC Business", url: "https://feeds.bbci.co.uk/news/business/rss.xml" },
+  ],
+  worldSports: [
+    { name: "BBC Sport", url: "https://feeds.bbci.co.uk/sport/rss.xml" },
+    { name: "Reuters Sports", url: "https://www.reuters.com/lifestyle/sports/rss" },
+  ],
 };
 
 module.exports = { rssFeeds };
