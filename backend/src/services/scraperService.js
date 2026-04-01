@@ -5,6 +5,57 @@ const cheerio = require("cheerio");
 const Article = require("../models/Article");
 
 const SCRAPE_BATCH_SIZE = 3;
+const MIN_ARTICLE_CONTENT_LENGTH = 200;
+
+function normalizeParagraph(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractParagraphBlocks($, selectors) {
+  for (const selector of selectors) {
+    const paragraphs = $(selector)
+      .map((_, element) => normalizeParagraph($(element).text()))
+      .get()
+      .filter(Boolean);
+
+    if (paragraphs.length > 0) {
+      return paragraphs;
+    }
+  }
+
+  return [];
+}
+
+function buildScrapedContent($, article) {
+  const paragraphBlocks = extractParagraphBlocks($, [
+    "article p",
+    "[data-testid='article-body'] p",
+    ".article-body p",
+    "main p",
+    "p",
+  ]);
+
+  const metaDescription = normalizeParagraph(
+    $('meta[name="description"]').attr("content") ||
+    $('meta[property="og:description"]').attr("content") ||
+    ""
+  );
+  const feedContent = normalizeParagraph(article.content);
+
+  const combinedBlocks = [
+    ...paragraphBlocks,
+    metaDescription,
+    feedContent,
+  ].filter(Boolean);
+
+  const uniqueBlocks = combinedBlocks.filter(
+    (block, index) => combinedBlocks.indexOf(block) === index
+  );
+
+  return uniqueBlocks.join("\n\n").slice(0, 10000);
+}
 
 const scrapeArticles = async (articleIds = []) => {
   try {
@@ -34,16 +85,12 @@ const scrapeArticles = async (articleIds = []) => {
 
         const $ = cheerio.load(response.data);
 
-        const rawContent = $("p")
-          .map((i, el) => $(el).text().trim())
-          .get()
-          .join(" ")
-          .slice(0, 10000);
+        const rawContent = buildScrapedContent($, article);
 
         const image =
-          $('meta[property="og:image"]').attr("content") || "";
+          $('meta[property="og:image"]').attr("content") || article.image || "";
 
-        if (!rawContent || rawContent.length < 200) {
+        if (!rawContent || rawContent.length < MIN_ARTICLE_CONTENT_LENGTH) {
           article.processingStatus = "failed";
           await article.save();
           failedArticleIds.push(String(article._id));

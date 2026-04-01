@@ -23,7 +23,7 @@ const rssFeeds = {
   // ],
   // worldSports: [
   //   { name: "BBC Sport", url: "https://feeds.bbci.co.uk/sport/rss.xml" },
-  //   // { name: "Reuters Sports", url: "https://www.reuters.com/lifestyle/sports/rss" },
+  //   { name: "Reuters Sports", url: "https://www.reuters.com/lifestyle/sports/rss" },
   // ],
 };
 

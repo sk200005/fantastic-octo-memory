@@ -1,3 +1,7 @@
+const { removeNoise } = require("../../utils/articleCleaner");
+const { buildSummaryInput, splitIntoSentences } = require("../../utils/sentenceUtils");
+const { generateBulletSummary } = require("../../utils/summaryFormatter");
+
 const STOP_WORDS = new Set([
   "a", "about", "above", "after", "again", "against", "all", "also", "am",
   "an", "and", "any", "are", "as", "at", "be", "because", "been", "before",
@@ -12,22 +16,23 @@ const STOP_WORDS = new Set([
   "themselves", "then", "there", "these", "they", "this", "those", "through",
   "to", "too", "under", "until", "up", "very", "was", "we", "were", "what",
   "when", "where", "which", "while", "who", "whom", "why", "will", "with",
-  "you", "your", "yours", "yourself", "yourselves"
+  "you", "your", "yours", "yourself", "yourselves",
 ]);
 
-function splitIntoSentences(text) {
-  return text
-    .replace(/\s+/g, " ")
-    .match(/[^.!?]+[.!?]+|[^.!?]+$/g)
-    ?.map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length > 40) || [];
-}
+const MAX_INPUT_CHARS = 1800;
+const MAX_SUMMARY_CHARS = 400;
+const MAX_SUMMARY_SENTENCES = 3;
 
 function tokenize(text) {
-  return text
+  return String(text || "")
     .toLowerCase()
     .match(/[a-z0-9']+/g)
     ?.filter((word) => word.length > 2 && !STOP_WORDS.has(word)) || [];
+}
+
+function prepareTextForSummary(rawContent) {
+  const cleaned = removeNoise(rawContent);
+  return buildSummaryInput(cleaned, MAX_INPUT_CHARS);
 }
 
 function buildWordFrequencies(sentences) {
@@ -62,7 +67,7 @@ function scoreSentence(sentence, index, sentenceCount, frequencies) {
   return keywordScore * uniqueWordBoost * positionBoost * lengthPenalty * endingBoost;
 }
 
-function selectSummarySentences(sentences, maxSentences = 3) {
+function selectSummarySentences(sentences, maxSentences = MAX_SUMMARY_SENTENCES) {
   const frequencies = buildWordFrequencies(sentences);
   const ranked = sentences.map((sentence, index) => ({
     sentence,
@@ -77,30 +82,83 @@ function selectSummarySentences(sentences, maxSentences = 3) {
     .map((item) => item.sentence);
 }
 
-async function summarizeArticle(rawContent) {
-  if (!rawContent || !rawContent.trim()) {
-    return "";
-  }
-
-  const cleanedText = rawContent.trim().slice(0, 4000);
-  const sentences = splitIntoSentences(cleanedText);
-
-  if (sentences.length === 0) {
-    return cleanedText.slice(0, 240);
-  }
-
-  if (sentences.length <= 3) {
-    return sentences.join(" ");
-  }
-
-  const summarySentences = selectSummarySentences(sentences, 3);
-  let summary = summarySentences.join(" ").trim();
-
-  if (summary.length < 120) {
-    summary = sentences.slice(0, Math.min(3, sentences.length)).join(" ").trim();
-  }
-
-  return summary.slice(0, 500).trim();
+function cleanSummary(summary) {
+  return removeNoise(summary);
 }
 
-module.exports = { summarizeArticle };
+function limitSummaryLength(summary) {
+  const sentences = splitIntoSentences(summary).slice(0, MAX_SUMMARY_SENTENCES);
+  let limited = sentences.join(" ").trim();
+
+  if (!limited) {
+    limited = String(summary || "").trim();
+  }
+
+  if (limited.length <= MAX_SUMMARY_CHARS) {
+    return limited;
+  }
+
+  const safeLimited = buildSummaryInput(limited, MAX_SUMMARY_CHARS);
+
+  if (safeLimited) {
+    return safeLimited;
+  }
+
+  return limited.slice(0, MAX_SUMMARY_CHARS).trim();
+}
+
+async function summarizeArticle(rawContent) {
+  if (!rawContent || !String(rawContent).trim()) {
+    return {
+      summaryText: "",
+      summaryPoints: [],
+    };
+  }
+
+  const summaryInput = prepareTextForSummary(rawContent);
+
+  console.log("Cleaned article text prepared for summarization");
+
+  if (!summaryInput) {
+    return {
+      summaryText: "",
+      summaryPoints: [],
+    };
+  }
+
+  const sentences = splitIntoSentences(summaryInput)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 40);
+
+  let summary;
+
+  if (sentences.length === 0) {
+    summary = summaryInput;
+  } else if (sentences.length <= MAX_SUMMARY_SENTENCES) {
+    summary = sentences.join(" ");
+  } else {
+    const summarySentences = selectSummarySentences(sentences, MAX_SUMMARY_SENTENCES);
+    summary = summarySentences.join(" ").trim();
+
+    if (summary.length < 120) {
+      summary = sentences.slice(0, MAX_SUMMARY_SENTENCES).join(" ").trim();
+    }
+  }
+
+  const summaryText = limitSummaryLength(cleanSummary(summary));
+  const summaryPoints = generateBulletSummary(summaryText);
+
+  console.log("Generated professional summary");
+
+  return {
+    summaryText,
+    summaryPoints,
+  };
+}
+
+module.exports = {
+  cleanSummary,
+  formatSummaryPoints: generateBulletSummary,
+  prepareTextForSummary,
+  summarizeArticle,
+};

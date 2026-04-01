@@ -33,6 +33,14 @@ const articleSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  summaryText: {
+    type: String,
+    default: ""
+  },
+  summaryPoints: {
+    type: [String],
+    default: []
+  },
   category: {
     type: String,
     default: "general"
@@ -42,6 +50,22 @@ const articleSchema = new mongoose.Schema({
     default: ""
   },
   sourceGroup: {
+    type: String,
+    default: ""
+  },
+  sourceLean: {
+    type: String,
+    default: "center"
+  },
+  leanDeviation: {
+    type: Number,
+    default: 0
+  },
+  articleHash: {
+    type: String,
+    default: ""
+  },
+  eventClusterId: {
     type: String,
     default: ""
   },
@@ -68,6 +92,15 @@ const articleSchema = new mongoose.Schema({
     sentiment: String,
     biasScore: Number,
     biasScoreFinal: Number,
+    perspectiveBalanceScore: Number,
+    framingInsight: String,
+    framingType: String,
+    missingPerspective: String,
+    loadedLanguageCount: Number,
+    topic: String,
+    confidence: Number,
+    sourceLean: String,
+    leanDeviation: Number,
     emotionalTone: String,
     explanation: String,
     loadedWords: [String],
@@ -79,7 +112,19 @@ const articleSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 articleSchema.pre("save", function setDerivedArticleFields() {
-  const summaryOrContent = this.summary || this.content || "";
+  if (!this.summaryText && this.summary) {
+    this.summaryText = this.summary;
+  }
+
+  if (!this.summary && this.summaryText) {
+    this.summary = this.summaryText;
+  }
+
+  if (!Array.isArray(this.summaryPoints)) {
+    this.summaryPoints = [];
+  }
+
+  const summaryOrContent = this.summaryText || this.summary || this.content || "";
   const categorized = categorizeArticle({
     title: this.title,
     summary: summaryOrContent,
@@ -102,6 +147,20 @@ articleSchema.pre("save", function setDerivedArticleFields() {
 
   if (this.bias?.sentiment) {
     this.sentiment = this.bias.sentiment;
+  }
+
+  if (!this.sourceLean) {
+    this.sourceLean = "center";
+  }
+
+  if (this.bias?.sourceLean) {
+    this.sourceLean = this.bias.sourceLean;
+  }
+
+  if (this.bias?.leanDeviation !== undefined && this.bias?.leanDeviation !== null) {
+    this.leanDeviation = this.bias.leanDeviation;
+  } else if (this.leanDeviation === undefined || this.leanDeviation === null) {
+    this.leanDeviation = 0;
   }
 });
 

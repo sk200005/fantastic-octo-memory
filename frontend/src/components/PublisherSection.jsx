@@ -18,7 +18,7 @@ function PublisherSection() {
       <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
         <div className="max-w-xl">
           <p className="text-sm font-black uppercase tracking-[0.28em] text-sky-700">
-            About us 
+            InSight News
           </p>
 
           <h2 className="mt-5 text-4xl font-black uppercase leading-tight text-slate-950 sm:text-5xl">

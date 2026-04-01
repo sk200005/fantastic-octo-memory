@@ -9,17 +9,16 @@ const categories = [
   { label: "Sports", value: "sports" },
   { label: "War", value: "war" },
   { label: "Stocks", value: "stocks" },
-  { label: "Technology", value: "technology" },
+  // { label: "Technology", value: "technology" },
   { label: "Economy", value: "economy" },
-  { label: "World", value: "world" },
-  { label: "Entertainment", value: "entertainment" },
+  // { label: "World", value: "world" },
+  // { label: "Entertainment", value: "entertainment" },
 ];
-const TARGET_COMPLETED_BATCH_SIZE = 3;
-const MAX_RELOAD_ATTEMPTS = 4;
-
 function hasRenderableContent(article) {
   const hasImage = Boolean(article.image?.trim());
   const hasSummary = Boolean(article.summary?.trim());
+  const hasSummaryPoints = Array.isArray(article.summaryPoints)
+    && article.summaryPoints.some((point) => String(point || "").trim());
   const hasBiasAnalysis = Boolean(
     article.bias?.biasScore !== undefined ||
       article.bias?.politicalLean ||
@@ -27,7 +26,7 @@ function hasRenderableContent(article) {
       article.biasScore !== undefined
   );
 
-  return hasImage || hasSummary || hasBiasAnalysis;
+  return hasImage || hasSummary || hasSummaryPoints || hasBiasAnalysis;
 }
 
 function getApiErrorMessage(error) {
@@ -154,114 +153,89 @@ function News() {
 
     try {
       const optionalFailures = [];
-      const completedArticleIds = new Set();
-      const attemptedIngestedIds = new Set();
-      let reloadAttempt = 0;
 
       setLoading(true);
-      while (
-        completedArticleIds.size < TARGET_COMPLETED_BATCH_SIZE &&
-        reloadAttempt < MAX_RELOAD_ATTEMPTS
-      ) {
-        reloadAttempt += 1;
+      setStatusMessage("Fetching 3 fresh articles from rotating RSS sources...");
+      const reloadResult = await runStep("RSS reload", () => api.get("/news/reload-news"));
+      const ingestedArticleIds = reloadResult.response?.data?.articles?.map((article) => article._id) || [];
 
-        setStatusMessage(
-          `Fetching fresh articles (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+      setStatusMessage("Scraping 3 fetched articles...");
+      let scrapedArticleIds = [];
+      {
+        const result = await runStep(
+          "Scraping",
+          () => api.post("/scraper/run", { articleIds: ingestedArticleIds }),
+          { optional: true }
         );
-        const reloadResult = await runStep("RSS reload", () => api.get("/news/reload-news"));
-        const ingestedArticleIds =
-          reloadResult.response?.data?.articles
-            ?.map((article) => article._id)
-            .filter((articleId) => {
-              if (!articleId || attemptedIngestedIds.has(articleId)) {
-                return false;
-              }
 
-              attemptedIngestedIds.add(articleId);
-              return true;
-            }) || [];
+        if (!result.ok) {
+          optionalFailures.push(result.message);
+        } else {
+          scrapedArticleIds = result.response?.data?.articleIds || [];
 
-        if (ingestedArticleIds.length === 0) {
-          optionalFailures.push("No new unique articles were available from the RSS sources.");
-          continue;
-        }
-
-        setStatusMessage(
-          `Scraping batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
-        );
-        let scrapedArticleIds = [];
-        {
-          const result = await runStep(
-            "Scraping",
-            () => api.post("/scraper/run", { articleIds: ingestedArticleIds }),
-            { optional: true }
-          );
-
-          if (!result.ok) {
-            optionalFailures.push(result.message);
-          } else {
-            scrapedArticleIds = result.response?.data?.articleIds || [];
+          if (scrapedArticleIds.length !== ingestedArticleIds.length) {
+            optionalFailures.push(
+              `Only ${scrapedArticleIds.length} of ${ingestedArticleIds.length} fetched articles were scraped successfully.`
+            );
           }
         }
+      }
 
-        if (scrapedArticleIds.length === 0) {
-          continue;
-        }
-
-        setStatusMessage(
-          `Generating summaries for batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+      setStatusMessage("Generating summaries...");
+      let summarizedArticleIds = [];
+      {
+        const result = await runStep(
+          "Summarization",
+          () => api.post("/summarize", { articleIds: scrapedArticleIds }),
+          { optional: true }
         );
-        let summarizedArticleIds = [];
-        {
-          const result = await runStep(
-            "Summarization",
-            () => api.post("/summarize", { articleIds: scrapedArticleIds }),
-            { optional: true }
-          );
 
-          if (!result.ok) {
-            optionalFailures.push(result.message);
-          } else {
-            summarizedArticleIds = result.response?.data?.articleIds || [];
+        if (!result.ok) {
+          optionalFailures.push(result.message);
+        } else {
+          summarizedArticleIds = result.response?.data?.articleIds || [];
+
+          if (summarizedArticleIds.length !== scrapedArticleIds.length) {
+            optionalFailures.push(
+              `Only ${summarizedArticleIds.length} of ${scrapedArticleIds.length} scraped articles were summarized successfully.`
+            );
           }
         }
+      }
 
-        if (summarizedArticleIds.length === 0) {
-          continue;
-        }
-
-        setStatusMessage(
-          `Analyzing bias for batch ${reloadAttempt} (${completedArticleIds.size}/${TARGET_COMPLETED_BATCH_SIZE} completed)...`
+      setStatusMessage("Analyzing bias for 3 articles...");
+      let analyzedArticleIds = [];
+      let biasFailures = [];
+      {
+        const result = await runStep(
+          "Bias analysis",
+          () => api.post("/bias/run", { articleIds: summarizedArticleIds }),
+          { optional: true }
         );
-        {
-          const result = await runStep(
-            "Bias analysis",
-            () => api.post("/bias/run", { articleIds: summarizedArticleIds }),
-            { optional: true }
-          );
 
-          if (!result.ok) {
-            optionalFailures.push(result.message);
-          } else {
-            (result.response?.data?.articleIds || []).forEach((articleId) => {
-              if (articleId) {
-                completedArticleIds.add(articleId);
-              }
-            });
+        if (!result.ok) {
+          optionalFailures.push(result.message);
+        } else {
+          analyzedArticleIds = result.response?.data?.articleIds || [];
+          biasFailures = result.response?.data?.failures || [];
+
+          if (analyzedArticleIds.length !== summarizedArticleIds.length) {
+            optionalFailures.push(
+              biasFailures[0]?.error ||
+              `Only ${analyzedArticleIds.length} of ${summarizedArticleIds.length} summarized articles completed bias analysis.`
+            );
           }
         }
       }
 
       await fetchArticles(category);
 
-      if (completedArticleIds.size >= TARGET_COMPLETED_BATCH_SIZE) {
+      if (analyzedArticleIds.length === 3) {
         setStatusMessage("3 articles reloaded, analyzed, and displayed successfully.");
       } else if (optionalFailures.length > 0) {
         setStatusMessage(`Articles loaded with partial issues: ${optionalFailures[0]}`);
       } else {
-        setStatusMessage(
-          `Reload completed with ${completedArticleIds.size} fully analyzed article(s).`
-        );
+        setStatusMessage(`Reload completed with ${analyzedArticleIds.length} fully analyzed article(s).`);
       }
     } catch (error) {
       console.error("Pipeline error:", error);

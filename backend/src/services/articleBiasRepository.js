@@ -17,14 +17,17 @@ async function fetchArticlesForBiasAnalysis(batchSize = DEFAULT_BATCH_SIZE, arti
     .limit(batchSize);
 }
 
-async function updateArticleBias(articleId, bias) {
+async function updateArticleBias(articleId, bias, metadata = {}) {
   return Article.findByIdAndUpdate(
     articleId,
     {
       $set: {
         bias,
+        articleHash: metadata.articleHash || "",
         biasScore: bias.biasScoreFinal ?? bias.biasScore ?? 0,
         sentiment: bias.sentiment || "neutral",
+        sourceLean: bias.sourceLean || "center",
+        leanDeviation: Number.isFinite(bias.leanDeviation) ? bias.leanDeviation : 0,
         processingStatus: "bias_analyzed",
       },
     },

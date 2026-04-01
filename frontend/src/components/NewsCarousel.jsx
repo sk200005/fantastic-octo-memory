@@ -1,41 +1,80 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { calculateBiasDistribution } from "../utils/biasUtils";
 
-function getSummaryText(article) {
-  return (
-    article.summary?.trim() ||
-    article.rawContent?.trim()?.slice(0, 150) ||
-    article.content?.trim()?.slice(0, 150) ||
-    "Fresh coverage and perspective highlights from the latest headlines."
+function clampBiasScore(score) {
+  const numericScore = Number(score);
+
+  if (Number.isNaN(numericScore)) {
+    return 0.5;
+  }
+
+  return Math.min(1, Math.max(0, numericScore));
+}
+
+function getBiasBarSegments(article) {
+  const bias = article.bias || {};
+  const lean = String(
+    bias.politicalLean || bias.sourceLean || "center"
+  )
+    .trim()
+    .toLowerCase();
+  const score = clampBiasScore(
+    bias.biasScoreFinal ?? bias.biasScore ?? article.biasScore
   );
+
+  const weightedScore = Math.pow(score, 0.7);
+
+  if (lean === "left") {
+    const leftShare = Math.round(16 + weightedScore * 70);
+    const centerShare = Math.max(8, Math.round(30 - weightedScore * 20));
+    const rightShare = Math.max(4, 100 - leftShare - centerShare);
+
+    return [
+      { key: "left", value: leftShare, tone: "bg-rose-600" },
+      { key: "center", value: centerShare, tone: "bg-slate-200" },
+      { key: "right", value: rightShare, tone: "bg-blue-700" },
+    ];
+  }
+
+  if (lean === "right") {
+    const rightShare = Math.round(16 + weightedScore * 70);
+    const centerShare = Math.max(8, Math.round(30 - weightedScore * 20));
+    const leftShare = Math.max(4, 100 - rightShare - centerShare);
+
+    return [
+      { key: "left", value: leftShare, tone: "bg-rose-600" },
+      { key: "center", value: centerShare, tone: "bg-slate-200" },
+      { key: "right", value: rightShare, tone: "bg-blue-700" },
+    ];
+  }
+
+  const centerShare = Math.round(72 - weightedScore * 42);
+  const leftShare = Math.round((100 - centerShare) * (0.35 + weightedScore * 0.15));
+  const rightShare = 100 - centerShare - leftShare;
+
+  return [
+    { key: "left", value: leftShare, tone: "bg-rose-600" },
+    { key: "center", value: centerShare, tone: "bg-slate-200" },
+    { key: "right", value: rightShare, tone: "bg-blue-700" },
+  ];
 }
 
 function BiasBar({ article }) {
-  const segments = useMemo(() => {
-    const { left, center, right } = calculateBiasDistribution(article.bias);
-
-    return [
-      { label: "Left", value: left, tone: "bg-rose-500 text-white" },
-      { label: "Center", value: center, tone: "bg-slate-200 text-slate-700" },
-      { label: "Right", value: right, tone: "bg-blue-600 text-white" },
-    ];
-  }, [article.bias]);
+  const segments = useMemo(() => getBiasBarSegments(article), [article]);
 
   return (
-    <div className="mt-5">
-      <div className="overflow-hidden rounded-full border border-slate-200/80 bg-slate-100" aria-label="Bias analysis">
+    <div className="pt-4">
+      <div
+        className="overflow-hidden rounded-full border border-slate-200/80 bg-slate-100"
+        aria-label="Bias analysis"
+      >
         <div className="flex w-full">
           {segments.map((segment) => (
             <div
-              key={segment.label}
-              className={`flex min-h-9 items-center justify-center px-2 text-center text-[11px] font-bold tracking-tight sm:text-xs ${segment.tone}`}
+              key={segment.key}
+              className={`h-5 ${segment.tone}`}
               style={{ width: `${segment.value}%` }}
-            >
-              <span className="truncate">
-                {segment.label} {segment.value}%
-              </span>
-            </div>
+            />
           ))}
         </div>
       </div>
@@ -44,10 +83,10 @@ function BiasBar({ article }) {
 }
 
 function NewsCarouselCard({ article }) {
-  const summary = getSummaryText(article);
-
   return (
-    <article className="group flex h-full w-[min(78vw,19rem)] shrink-0 flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] sm:w-[18rem] lg:w-[19rem] xl:w-[20rem]">
+    <article
+      className="group flex h-full w-[min(78vw,19rem)] shrink-0 flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] sm:w-[18rem] lg:w-[19rem] xl:w-[20rem]"
+    >
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
         <img
           src={article.image}
@@ -60,37 +99,41 @@ function NewsCarouselCard({ article }) {
       </div>
 
       <div className="flex flex-1 flex-col px-5 py-5">
-        <div className="mb-3 flex items-center justify-between gap-3 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-slate-400">
-          <span>{article.source || "Latest Brief"}</span>
-          <span>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : "Today"}</span>
-        </div>
+        <div className="flex flex-1 flex-col">
+          <div className="mb-3 flex items-center justify-between gap-3 text-[0.74rem] font-bold uppercase tracking-[0.24em] text-slate-400">
+            <span>{article.source || "Latest Brief"}</span>
+            <span>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : "Today"}</span>
+          </div>
 
-        <p className="news-carousel-summary text-base font-medium leading-7 text-slate-700">
-          {summary}
-        </p>
+          <h3 className="news-carousel-summary text-[1.08rem] font-semibold leading-8 text-slate-800">
+            {article.title?.trim() || "Fresh coverage and perspective highlights from the latest headlines."}
+          </h3>
 
-        <div className="mt-5 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-[0.24em] text-sky-700">
-            Latest update
-          </span>
+          <div className="mt-auto pt-6">
+            <div className="flex items-center justify-between">
+              <span className="text-[0.82rem] font-bold uppercase tracking-[0.24em] text-sky-700">
+                Latest update
+              </span>
 
-          {article.link ? (
-            <a
-              href={article.link}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-semibold text-slate-900 transition hover:text-sky-700"
-            >
-              Read more
-            </a>
-          ) : (
-            <Link
-              to="/news"
-              className="text-sm font-semibold text-slate-900 transition hover:text-sky-700"
-            >
-              Explore
-            </Link>
-          )}
+              {article.link ? (
+                <a
+                  href={article.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[0.98rem] font-semibold text-slate-900 transition hover:text-sky-700"
+                >
+                  Read more
+                </a>
+              ) : (
+                <Link
+                  to="/news"
+                  className="text-[0.98rem] font-semibold text-slate-900 transition hover:text-sky-700"
+                >
+                  Explore
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
 
         <BiasBar article={article} />
@@ -100,40 +143,47 @@ function NewsCarouselCard({ article }) {
 }
 
 function NewsCarousel({ news = [] }) {
-  const items = useMemo(() => news.filter((article) => article.image).slice(0, 8), [news]);
-  const containerRef = useRef(null);
-  const pauseRef = useRef(false);
+  const items = useMemo(
+    () =>
+      news
+        .filter((article) => article.image && article.title?.trim())
+        .slice(0, 8),
+    [news]
+  );
+  const trackRef = useRef(null);
   const frameRef = useRef(0);
   const lastTimeRef = useRef(0);
+  const offsetRef = useRef(0);
   const scrollSpeed = 38;
   const loopItems = useMemo(() => [...items, ...items], [items]);
-
-  const stepByCard = useCallback((direction) => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const firstCard = container.querySelector("[data-news-card]");
-    const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : 320;
-    const styles = window.getComputedStyle(container);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap || "24") || 24;
-
-    container.scrollBy({
-      left: direction * (cardWidth + gap),
-      behavior: "smooth",
-    });
-  }, []);
+  const [loopWidth, setLoopWidth] = useState(0);
 
   useEffect(() => {
-    const container = containerRef.current;
+    const track = trackRef.current;
 
-    if (!container || items.length <= 1) {
+    if (!track || items.length <= 1) {
       return undefined;
     }
 
-    const halfWidth = () => container.scrollWidth / 2;
+    const updateLoopWidth = () => {
+      const half = track.scrollWidth / 2;
+      setLoopWidth(half);
+    };
+
+    updateLoopWidth();
+    window.addEventListener("resize", updateLoopWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateLoopWidth);
+    };
+  }, [items.length, loopItems.length]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+
+    if (!track || items.length <= 1 || loopWidth <= 0) {
+      return undefined;
+    }
 
     const tick = (time) => {
       if (!lastTimeRef.current) {
@@ -143,14 +193,13 @@ function NewsCarousel({ news = [] }) {
       const delta = time - lastTimeRef.current;
       lastTimeRef.current = time;
 
-      if (!pauseRef.current) {
-        container.scrollLeft += (scrollSpeed * delta) / 1000;
+      offsetRef.current += (scrollSpeed * delta) / 1000;
 
-        const resetPoint = halfWidth();
-        if (container.scrollLeft >= resetPoint) {
-          container.scrollLeft -= resetPoint;
-        }
+      if (offsetRef.current >= loopWidth) {
+        offsetRef.current -= loopWidth;
       }
+
+      track.style.transform = `translate3d(-${offsetRef.current}px, 0, 0)`;
 
       frameRef.current = window.requestAnimationFrame(tick);
     };
@@ -161,8 +210,10 @@ function NewsCarousel({ news = [] }) {
       window.cancelAnimationFrame(frameRef.current);
       frameRef.current = 0;
       lastTimeRef.current = 0;
+      offsetRef.current = 0;
+      track.style.transform = "translate3d(0, 0, 0)";
     };
-  }, [items.length]);
+  }, [items.length, loopWidth]);
 
   if (!items.length) {
     return null;
@@ -176,32 +227,32 @@ function NewsCarousel({ news = [] }) {
             <p className="text-sm font-black uppercase tracking-[0.28em] text-sky-700">
               Latest News
             </p>
-            <h2 className="mt-4 text-3xl font-black uppercase leading-tight text-slate-950 sm:text-4xl">
-              Fresh headlines moving in real time
-            </h2>
-            <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
+            <h1 className="mt-4 text-3xl font-black uppercase leading-tight text-slate-950 sm:text-4xl">
+              Daily Briefing
+            </h1>
+            {/* <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">
               A live-style stream of the latest coverage, designed to surface key updates quickly
               without interrupting the rhythm of the homepage.
-            </p>
+            </p> */}
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
+            {/* <button
               type="button"
               onClick={() => stepByCard(-1)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
               aria-label="Show previous news cards"
             >
               ←
-            </button>
-            <button
+            </button> */}
+            {/* <button
               type="button"
               onClick={() => stepByCard(1)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-lg font-semibold text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
               aria-label="Show next news cards"
             >
               →
-            </button>
+            </button> */}
             <Link
               to="/news"
               className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
@@ -212,18 +263,10 @@ function NewsCarousel({ news = [] }) {
         </div>
       </div>
 
-      <div
-        className="relative mt-10 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]"
-        onMouseEnter={() => {
-          pauseRef.current = true;
-        }}
-        onMouseLeave={() => {
-          pauseRef.current = false;
-        }}
-      >
+      <div className="relative mt-10 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
         <div
-          ref={containerRef}
-          className="news-carousel-scroll flex gap-6 overflow-x-hidden scroll-smooth"
+          ref={trackRef}
+          className="flex w-max gap-6 will-change-transform"
         >
           {loopItems.map((article, index) => (
             <div
@@ -235,6 +278,45 @@ function NewsCarousel({ news = [] }) {
               <NewsCarouselCard article={article} />
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mx-auto mt-10 flex max-w-7xl justify-center px-6 md:px-10 xl:px-16">
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Link
+            to="/news"
+            className="inline-flex min-w-[13rem] justify-center rounded-full border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-slate-900 shadow-[0_12px_24px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
+          >
+            Views All News
+          </Link>
+          <a
+            href="/#bias-analytics"
+            className="inline-flex min-w-[13rem] justify-center rounded-full border border-slate-900 bg-slate-950 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition hover:-translate-y-0.5 hover:bg-slate-800"
+            onClick={(event) => {
+              event.preventDefault();
+
+              const target = document.querySelector("#bias-analytics");
+
+              if (!target) {
+                window.location.assign("/#bias-analytics");
+                return;
+              }
+
+              const header = document.querySelector("header");
+              const headerHeight = header?.getBoundingClientRect().height || 0;
+              const offset = headerHeight + 24;
+              const top =
+                window.scrollY + target.getBoundingClientRect().top - offset;
+
+              window.history.replaceState({}, "", "/#bias-analytics");
+              window.scrollTo({
+                top,
+                behavior: "smooth",
+              });
+            }}
+          >
+            Bias Analytics
+          </a>
         </div>
       </div>
     </section>

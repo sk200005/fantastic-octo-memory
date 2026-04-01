@@ -17,16 +17,30 @@ function Navbar() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-7 text-sm font-semibold text-slate-600 md:flex">
-          <Link to={{ pathname: "/", hash: "#top" }} className="transition hover:text-slate-950">Home</Link>
-          <Link to="/news" className="transition hover:text-slate-950">News</Link>
-          <Link to={{ pathname: "/", hash: "#bias-analytics" }} className="transition hover:text-slate-950">Bias Analysis</Link>
-          <Link to={{ pathname: "/", hash: "#about" }} className="transition hover:text-slate-950">About</Link>
+        <nav className="ml-auto hidden translate-x-6 items-center gap-10 pl-10 text-[1.05rem] font-semibold text-slate-600 md:flex lg:translate-x-10 lg:pl-16">
+          <Link
+            to={{ pathname: "/", hash: "#top" }}
+            className="rounded-full px-2 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-300 hover:text-[#01040c] hover:shadow-[0_12px_24px_rgba(2,8,23,0.18)] focus-visible:-translate-y-0.5 focus-visible:bg-slate-300 focus-visible:text-[#01040c] focus-visible:outline-none"
+          >
+            Home
+          </Link>
           <Link
             to="/news"
-            className="rounded-full bg-slate-950 px-5 py-2.5 text-white shadow-[0_8px_18px_rgba(15,23,42,0.12)] transition hover:bg-slate-800"
+            className="rounded-full px-2 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-300 hover:text-[#01040c] hover:shadow-[0_12px_24px_rgba(2,8,23,0.18)] focus-visible:-translate-y-0.5 focus-visible:bg-slate-300 focus-visible:text-[#01040c] focus-visible:outline-none"
           >
-            Login
+            News
+          </Link>
+          <Link
+            to={{ pathname: "/", hash: "#bias-analytics" }}
+            className="rounded-full px-2 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-300 hover:text-[#01040c] hover:shadow-[0_12px_24px_rgba(2,8,23,0.18)] focus-visible:-translate-y-0.5 focus-visible:bg-slate-300 focus-visible:text-[#01040c] focus-visible:outline-none"
+          >
+            Bias Analysis
+          </Link>
+          <Link
+            to={{ pathname: "/", hash: "#about" }}
+            className="rounded-full px-2 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-300 hover:text-[#01040c] hover:shadow-[0_12px_24px_rgba(2,8,23,0.18)] focus-visible:-translate-y-0.5 focus-visible:bg-slate-300 focus-visible:text-[#01040c] focus-visible:outline-none"
+          >
+            About
           </Link>
         </nav>
 

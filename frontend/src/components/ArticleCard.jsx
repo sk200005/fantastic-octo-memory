@@ -1,6 +1,5 @@
-import React, { memo, useState } from "react";
-import api from "../api/axios";
-import { getLeanColor, getSentimentColor, getBiasLevel } from "../utils/biasUtils";
+import React, { memo, useMemo, useState } from "react";
+import BiasInsightPanel from "./BiasInsightPanel";
 
 function formatCategory(category) {
   if (!category) {
@@ -31,151 +30,235 @@ function getPreviewText(article) {
   return "";
 }
 
+function getSummaryPoints(article) {
+  if (!Array.isArray(article.summaryPoints)) {
+    return [];
+  }
+
+  return article.summaryPoints
+    .map((point) => String(point || "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function normalizeLean(lean) {
+  const normalized = String(lean || "").trim().toLowerCase();
+  return normalized || "center";
+}
+
+function getBiasLevelMeta(score) {
+  const numericScore = Number(score) || 0;
+
+  if (numericScore < 0.2) {
+    return {
+      label: "neutral",
+      className: "bias-badge bg-yellow-50 text-yellow-700",
+    };
+  }
+
+  if (numericScore < 0.4) {
+    return {
+      label: "slight bias",
+      className: "bias-badge bg-amber-50 text-amber-700",
+    };
+  }
+
+  if (numericScore < 0.7) {
+    return {
+      label: "moderate bias",
+      className: "bias-badge bg-orange-50 text-orange-700",
+    };
+  }
+
+  return {
+    label: "strong bias",
+    className: "bias-badge bg-red-50 text-red-700",
+  };
+}
+
+function getPerspectiveBalanceMeta(score) {
+  const numericScore = Number(score);
+
+  if (numericScore > 0.7) {
+    return {
+      label: "balanced",
+      className: "balance-badge bg-green-50 text-green-700",
+      insight: "presents multiple viewpoints",
+    };
+  }
+
+  if (numericScore >= 0.4) {
+    return {
+      label: "limited views",
+      className: "balance-badge bg-yellow-50 text-yellow-700",
+      insight: "includes limited opposing viewpoints",
+    };
+  }
+
+  return {
+    label: "one-sided",
+    className: "balance-badge bg-red-50 text-red-700",
+    insight: "presents a one-sided narrative",
+  };
+}
+
+function getLeanBadgeClass(lean) {
+  switch (normalizeLean(lean)) {
+    case "left":
+      return "center-badge bg-sky-50 text-sky-700";
+    case "right":
+      return "center-badge bg-rose-50 text-rose-700";
+    case "center":
+    default:
+      return "center-badge bg-blue-50 text-blue-700";
+  }
+}
+
 function ArticleCard({ article }) {
-  const biasScore = article.bias?.biasScore ?? article.biasScore;
-  const sentiment = article.bias?.sentiment ?? article.sentiment;
-  const politicalLean = article.bias?.politicalLean;
   const previewText = getPreviewText(article);
-  const [recommendations, setRecommendations] = useState([]);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const summaryPoints = getSummaryPoints(article);
+  const [expanded, setExpanded] = useState(false);
 
-  const handleCardClick = async () => {
-    const nextExpanded = !isExpanded;
-    setIsExpanded(nextExpanded);
+  const toggleExpand = () => {
+    setExpanded((prev) => !prev);
+  };
 
-    if (!nextExpanded || recommendations.length > 0) {
-      return;
-    }
-
-    try {
-      setIsLoadingRecommendations(true);
-      const res = await api.get(`/recommend/${article._id}`);
-      setRecommendations(res.data);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-      setRecommendations([]);
-    } finally {
-      setIsLoadingRecommendations(false);
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleExpand();
     }
   };
 
+  const bias = article.bias || {};
+  const politicalLean = normalizeLean(bias.politicalLean);
+  const biasScoreFinal = Number(
+    bias.biasScoreFinal ?? bias.biasScore ?? article.biasScore ?? 0
+  );
+  const perspectiveBalanceScore = Number(bias.perspectiveBalanceScore ?? 0);
+
+  const biasLevelMeta = useMemo(
+    () => getBiasLevelMeta(biasScoreFinal),
+    [biasScoreFinal]
+  );
+  const perspectiveMeta = useMemo(
+    () => getPerspectiveBalanceMeta(perspectiveBalanceScore),
+    [perspectiveBalanceScore]
+  );
+
   return (
     <div
-      className="deferred-card cursor-pointer overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_8px_22px_rgba(15,23,42,0.08)] transition-transform duration-300 hover:scale-[1.01]"
-      onClick={handleCardClick}
+      className={`deferred-card group relative cursor-pointer overflow-hidden rounded-2xl border border-white/60 bg-white/95 shadow-[0_10px_28px_rgba(15,23,42,0.10)] transition-[max-height,transform,box-shadow,border-color,background-color] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-2 hover:scale-[1.01] hover:border-sky-100 hover:bg-white hover:shadow-[0_26px_60px_rgba(15,23,42,0.18)] focus-visible:-translate-y-2 focus-visible:scale-[1.01] focus-visible:border-cyan-300 focus-visible:bg-white focus-visible:shadow-[0_26px_60px_rgba(34,211,238,0.22)] focus-visible:outline-none ${
+        expanded ? "max-h-[1180px]" : "max-h-[260px]"
+      }`}
+      onClick={toggleExpand}
+      onKeyDown={handleKeyDown}
+      role="button"
+      aria-expanded={expanded}
+      tabIndex={0}
     >
-      <div className="flex flex-col items-stretch sm:flex-row">
-        {article.image && (
-          <div className="h-56 w-full flex-shrink-0 overflow-hidden sm:h-auto sm:w-72 sm:self-stretch">
-            <img
-              src={article.image}
-              alt={article.title}
-              className="h-full w-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        )}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(125,211,252,0.16),transparent_38%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.72),transparent_34%)] opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100 group-focus-visible:opacity-100" />
+      <div className="flex h-full flex-col">
+        <div className="flex flex-col items-stretch sm:flex-row">
+          {article.image && (
+            <div className="relative h-56 w-full flex-shrink-0 overflow-hidden sm:h-auto sm:w-72 sm:self-stretch">
+              <img
+                src={article.image}
+                alt={article.title}
+                className="h-full w-full object-cover transition-[transform,filter] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-hover:saturate-[1.05] group-focus-visible:scale-[1.04] group-focus-visible:saturate-[1.05]"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/12 via-transparent to-white/8 opacity-70 transition-opacity duration-500 group-hover:opacity-40 group-focus-visible:opacity-40" />
+            </div>
+          )}
 
-        <div className="p-7 flex flex-col gap-5 lg:flex-row lg:justify-between w-full">
-          <div className="flex-1 pr-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2 leading-snug">
-              {article.title}
-            </h2>
-
-            <p className="text-sm text-gray-500 mb-3">
-              <span className="font-medium">{article.source}</span>
-              {article.category && (
-                <>
-                  <span className="mx-2">•</span>
-                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                    {formatCategory(article.category)}
-                  </span>
-                </>
-              )}
-              <span className="mx-2">•</span>
-              {new Date(article.publishedAt).toLocaleDateString()}
-            </p>
-
-            {previewText ? (
-              <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
-                {previewText}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="lg:min-w-[370px] flex flex-col gap-5 lg:items-end lg:justify-between">
-            {(biasScore !== undefined && biasScore !== null) && (
-              <div className="flex flex-wrap lg:flex-nowrap gap-3 lg:justify-end">
-                {politicalLean && (
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${getLeanColor(politicalLean)}`}
-                  >
-                    {politicalLean}
-                  </span>
-                )}
-
-                <span
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${getSentimentColor(sentiment)}`}
-                >
-                  {sentiment || "Neutral"}
-                </span>
-
-                <span className="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-gray-200 text-gray-700">
-                  Bias {getBiasLevel(biasScore)} · {Math.round((biasScore || 0) * 100)}%
+          <div className="relative z-10 flex w-full flex-col gap-5 p-7 transition-[transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1 pr-4 lg:pr-8">
+              <div className="flex items-start justify-between gap-4">
+                <h2 className="mb-2 text-[1.75rem] font-semibold leading-[1.28] text-gray-900 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-slate-950 group-hover:translate-x-0.5 group-focus-visible:text-slate-950 group-focus-visible:translate-x-0.5">
+                  {article.title}
+                </h2>
+                <span className="mt-1 flex-shrink-0 text-lg font-semibold text-slate-400 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0.5 group-hover:text-sky-500 group-focus-visible:translate-y-0.5 group-focus-visible:text-cyan-500">
+                  {expanded ? "▲" : "▼"}
                 </span>
               </div>
-            )}
 
-            <a
-              href={article.link}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 text-sm font-medium hover:text-blue-700 hover:underline"
-              onClick={(event) => event.stopPropagation()}
-            >
-              Read Full Article →
-            </a>
+              <p className="mb-3 text-[0.98rem] text-gray-500 transition-colors duration-300 group-hover:text-slate-500 group-focus-visible:text-slate-500">
+                <span className="font-medium">{article.source}</span>
+                {article.category && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 transition-[transform,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:bg-blue-100 group-hover:shadow-[0_8px_18px_rgba(59,130,246,0.12)] group-focus-visible:-translate-y-0.5 group-focus-visible:bg-blue-100 group-focus-visible:shadow-[0_8px_18px_rgba(59,130,246,0.12)]">
+                      {formatCategory(article.category)}
+                    </span>
+                  </>
+                )}
+                <span className="mx-2">•</span>
+                {new Date(article.publishedAt).toLocaleDateString()}
+              </p>
+
+              {summaryPoints.length > 0 ? (
+                <ul className="space-y-3 text-[1.02rem] leading-8 text-gray-600 transition-colors duration-300 group-hover:text-slate-600 group-focus-visible:text-slate-600">
+                  {summaryPoints.map((point, index) => (
+                    <li
+                      key={`${article._id || article.link || article.title}-summary-${index}`}
+                      className={`flex items-start gap-3 ${expanded ? "" : index > 1 ? "hidden" : ""}`}
+                    >
+                      <span className="mt-[0.82rem] h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : previewText ? (
+                <p className={`text-[1.02rem] leading-8 text-gray-600 transition-colors duration-300 group-hover:text-slate-600 group-focus-visible:text-slate-600 ${expanded ? "" : "line-clamp-4"}`}>
+                  {previewText}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-5 lg:min-w-[390px] lg:max-w-[430px] lg:items-end lg:justify-between">
+              <div className="flex flex-wrap gap-3 lg:justify-end">
+                <span
+                  className={`rounded-full px-4 py-2 text-sm font-semibold capitalize whitespace-nowrap transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_18px_rgba(15,23,42,0.08)] group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-[0_10px_18px_rgba(15,23,42,0.08)] ${getLeanBadgeClass(
+                    politicalLean
+                  )}`}
+                >
+                  {politicalLean}
+                </span>
+
+                <span
+                  className={`rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_18px_rgba(15,23,42,0.08)] group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-[0_10px_18px_rgba(15,23,42,0.08)] ${biasLevelMeta.className}`}
+                >
+                  {biasLevelMeta.label} {Math.round(biasScoreFinal * 100)}%
+                </span>
+
+                <span
+                  className={`rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_18px_rgba(15,23,42,0.08)] group-focus-visible:-translate-y-0.5 group-focus-visible:shadow-[0_10px_18px_rgba(15,23,42,0.08)] ${perspectiveMeta.className}`}
+                >
+                  {perspectiveMeta.label}
+                </span>
+              </div>
+
+              <a
+                href={article.link}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-blue-600 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-blue-700 hover:underline group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5"
+                onClick={(event) => event.stopPropagation()}
+              >
+                Read Full Article →
+              </a>
+            </div>
           </div>
         </div>
+
+        {expanded ? (
+          <div className="border-t border-gray-200/90 px-5 py-6 sm:px-7">
+            <BiasInsightPanel bias={bias} />
+          </div>
+        ) : null}
       </div>
-
-      {isExpanded && (
-        <div className="border-t border-gray-200 bg-slate-50 px-7 py-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
-            Related Articles
-          </h3>
-
-          {isLoadingRecommendations ? (
-            <p className="mt-3 text-sm text-slate-500">Loading recommendations...</p>
-          ) : recommendations.length > 0 ? (
-            <div className="mt-3 grid gap-3">
-              {recommendations.map((recommendedArticle) => (
-                <a
-                  key={recommendedArticle._id}
-                  href={recommendedArticle.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 transition hover:border-cyan-400 hover:shadow"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <p className="text-sm font-semibold text-slate-900">
-                    {recommendedArticle.title}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {recommendedArticle.source} • {formatCategory(recommendedArticle.category)}
-                  </p>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-sm text-slate-500">
-              No similar articles found yet.
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

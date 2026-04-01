@@ -26,11 +26,11 @@ function LandingPage() {
   const latestNewsItems = useMemo(
     () =>
       [...latestNews]
-        .filter((article) => article.image && (article.summary || article.rawContent || article.content))
+        .filter((article) => article.image && article.title?.trim())
         .sort(
           (firstArticle, secondArticle) =>
-            new Date(secondArticle.publishedAt || 0).getTime() -
-            new Date(firstArticle.publishedAt || 0).getTime()
+            new Date(secondArticle.createdAt || secondArticle.publishedAt || 0).getTime() -
+            new Date(firstArticle.createdAt || firstArticle.publishedAt || 0).getTime()
         )
         .slice(0, 8),
     [latestNews]
@@ -42,10 +42,10 @@ function LandingPage() {
       <main>
         <HeroSection />
         <NewsCarousel news={latestNewsItems} />
-        <PublisherSection />
-        <div className="px-6 pb-12 md:px-10 xl:px-16">
-          <CategoryBiasAnalyticsSection className="mx-auto max-w-7xl" />
+        <div className="pb-12 pt-16 md:pt-20">
+          <CategoryBiasAnalyticsSection className="w-full" />
         </div>
+        <PublisherSection />
       </main>
       <Footer />
     </div>

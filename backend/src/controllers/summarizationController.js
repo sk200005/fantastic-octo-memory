@@ -33,13 +33,15 @@ async function summarizePendingArticles(req, res) {
 
     for (const article of articles) {
       try {
-        const summary = await summarizeArticle(article.rawContent);
+        const { summaryText, summaryPoints } = await summarizeArticle(article.rawContent);
 
-        if (!summary) {
+        if (!summaryText) {
           continue;
         }
 
-        article.summary = summary;
+        article.summary = summaryText;
+        article.summaryText = summaryText;
+        article.summaryPoints = summaryPoints;
         article.processingStatus = "analyzed";
         await article.save();
         summarized++;

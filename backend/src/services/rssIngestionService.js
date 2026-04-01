@@ -2,6 +2,7 @@ const Parser = require("rss-parser");
 const Article = require("../models/Article");
 const { rssFeeds } = require("../config/rssFeeds");
 const { selectFeedsForCycle } = require("./feedSelector");
+const { getSourceLean } = require("../../utils/sourceBiasMap");
 
 const parser = new Parser();
 const TARGET_ARTICLE_BATCH_SIZE = 3;
@@ -36,7 +37,18 @@ async function updateExistingArticleCategory(link, sourceGroup, source) {
     shouldSave = true;
   }
 
+  const mappedSourceLean = getSourceLean(existingArticle.source || source);
+
+  if (existingArticle.sourceLean !== mappedSourceLean) {
+    existingArticle.sourceLean = mappedSourceLean;
+    shouldSave = true;
+  }
+
   if (shouldSave) {
+    if (!existingArticle.sourceLean) {
+      existingArticle.sourceLean = "center";
+    }
+
     await existingArticle.save();
   }
 
@@ -74,12 +86,20 @@ async function fetchArticleForCategory(selectedFeed) {
           title: item.title || "Untitled Article",
           link: item.link,
           source: feed.name,
+          sourceLean: getSourceLean(feed.name),
           sourceGroup: selectedFeed.category,
           publishedAt: item.pubDate || item.isoDate || new Date(),
           content: item.contentSnippet || item.content || "",
           image: item.enclosure?.url || "",
           processingStatus: "pending",
         });
+
+        if (!article.sourceLean) {
+          article.sourceLean = "center";
+        }
+
+        console.log("Source:", article.source);
+        console.log("Source Lean:", article.sourceLean);
 
         await article.save();
         return article;
@@ -169,12 +189,20 @@ function createCategoryFetcher(selectedFeed) {
           title: item.title || "Untitled Article",
           link: item.link,
           source: currentFeed?.name || selectedFeed.name,
+          sourceLean: getSourceLean(currentFeed?.name || selectedFeed.name),
           sourceGroup: selectedFeed.category,
           publishedAt: item.pubDate || item.isoDate || new Date(),
           content: item.contentSnippet || item.content || "",
           image: item.enclosure?.url || "",
           processingStatus: "pending",
         });
+
+        if (!article.sourceLean) {
+          article.sourceLean = "center";
+        }
+
+        console.log("Source:", article.source);
+        console.log("Source Lean:", article.sourceLean);
 
         await article.save();
         return article;
