@@ -267,7 +267,7 @@ function News() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
-                ADBMS Dashboard
+                Dashboard
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-white">
                 Filter ○ Analyse ○ Relate

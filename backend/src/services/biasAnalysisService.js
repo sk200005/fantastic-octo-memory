@@ -12,6 +12,7 @@ const {
   getSourceLean,
   calculateLeanDeviation,
 } = require("../../utils/sourceBiasMap");
+const { evaluateBiasAccuracy } = require("../../utils/biasEvaluation");
 const { assignEventClusters } = require("./eventClusteringService");
 
 const MAX_BIAS_CONTEXT_LENGTH = 1800;
@@ -264,6 +265,7 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
     const failures = [];
     const analyzedArticleIds = [];
     const articleBatches = [];
+    const evaluatedArticles = [];
 
     for (let index = 0; index < articles.length; index += BATCH_SIZE) {
       articleBatches.push(articles.slice(index, index + BATCH_SIZE));
@@ -292,6 +294,7 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
           }
 
           analyzedArticleIds.push(String(article._id));
+          evaluatedArticles.push(article?.toObject ? article.toObject() : article);
           continue;
         }
 
@@ -326,6 +329,9 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
           );
           analyzed++;
           analyzedArticleIds.push(String(article._id));
+          evaluatedArticles.push(
+            updatedArticle?.toObject ? updatedArticle.toObject() : updatedArticle
+          );
           clusterCandidates.push(
             updatedArticle?.toObject ? updatedArticle.toObject() : updatedArticle
           );
@@ -366,6 +372,9 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
           });
           analyzed++;
           analyzedArticleIds.push(String(article._id));
+          evaluatedArticles.push(
+            updatedArticle?.toObject ? updatedArticle.toObject() : updatedArticle
+          );
           clusterCandidates.push(
             updatedArticle?.toObject ? updatedArticle.toObject() : updatedArticle
           );
@@ -388,6 +397,12 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
       }
     }
 
+    const evaluation = evaluateBiasAccuracy(evaluatedArticles);
+    console.log("Bias Evaluation:");
+    console.log(`Articles Tested: ${evaluation.articlesTested}`);
+    console.log(`Correct Predictions: ${evaluation.correctPredictions}`);
+    console.log(`Accuracy: ${evaluation.accuracy.toFixed(2)}`);
+
     return {
       success: true,
       message: "Bias analysis completed.",
@@ -397,6 +412,7 @@ async function runBiasAnalysisBatch(batchSize = DEFAULT_BATCH_SIZE, articleIds =
       requestedBatchSize: batchSize,
       articleIds: analyzedArticleIds,
       failures,
+      evaluation,
     };
   } catch (error) {
     return {

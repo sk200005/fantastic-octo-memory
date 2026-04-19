@@ -253,12 +253,12 @@ function NewsCarousel({ news = [] }) {
             >
               →
             </button> */}
-            <Link
+            {/* <Link
               to="/news"
               className="inline-flex w-fit rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold uppercase tracking-[0.18em] text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
             >
               View all news
-            </Link>
+            </Link>  */}
           </div>
         </div>
       </div>
