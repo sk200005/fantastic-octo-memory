@@ -16,7 +16,7 @@ function PublisherSection() {
   return (
     <section
       id="about"
-      className="deferred-section bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_22%,#ffffff_100%)] py-24 sm:py-28"
+      className="deferred-section bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_22%,#ffffff_100%)] pt-20 pb-24 sm:pt-24 sm:pb-28"
     >
       <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
         <div className="max-w-xl">

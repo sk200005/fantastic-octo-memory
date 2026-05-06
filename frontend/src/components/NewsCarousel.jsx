@@ -228,7 +228,7 @@ function NewsCarousel({ news = [] }) {
   }
 
   return (
-    <section className="news-carousel deferred-section relative overflow-hidden bg-[linear-gradient(180deg,#f7f6f2_0%,#f8fafc_28%,#eef4fb_100%)] py-16 sm:py-18">
+    <section className="news-carousel deferred-section relative overflow-hidden bg-[linear-gradient(180deg,#f7f6f2_0%,#f8fafc_36%,#eef4fb_78%,#eef4fb_100%)] pb-20 pt-16 sm:pt-18">
       <div className="mx-auto max-w-7xl px-6 md:px-10 xl:px-16">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
@@ -295,36 +295,14 @@ function NewsCarousel({ news = [] }) {
             to="/news"
             className="inline-flex min-w-[13rem] justify-center rounded-full border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-slate-900 shadow-[0_12px_24px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700"
           >
-            Views All News
+            View All News
           </Link>
-          <a
-            href="/#bias-analytics"
+          <Link
+            to="/bias-analysis"
             className="inline-flex min-w-[13rem] justify-center rounded-full border border-slate-900 bg-slate-950 px-6 py-3.5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition hover:-translate-y-0.5 hover:bg-slate-800"
-            onClick={(event) => {
-              event.preventDefault();
-
-              const target = document.querySelector("#bias-analytics");
-
-              if (!target) {
-                window.location.assign("/#bias-analytics");
-                return;
-              }
-
-              const header = document.querySelector("header");
-              const headerHeight = header?.getBoundingClientRect().height || 0;
-              const offset = headerHeight + 24;
-              const top =
-                window.scrollY + target.getBoundingClientRect().top - offset;
-
-              window.history.replaceState({}, "", "/#bias-analytics");
-              window.scrollTo({
-                top,
-                behavior: "smooth",
-              });
-            }}
           >
             Bias Analytics
-          </a>
+          </Link>
         </div>
       </div>
     </section>

@@ -81,7 +81,7 @@ function Footer() {
         <div>
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Product</h3>
           <ul className="mt-5 space-y-3.5 text-base text-slate-200">
-            <li>Features</li>
+
             <li>
               <Link to="/news" className="transition-colors hover:text-cyan-300">News</Link>
             </li>
@@ -97,7 +97,9 @@ function Footer() {
             <li>
               <Link to="/about" className="transition-colors hover:text-cyan-300">About</Link>
             </li>
-            <li>Contact</li>
+            <li>
+              <a href="mailto:swayamkorde2005@gmail.com" className="transition-colors hover:text-cyan-300">Contact</a>
+            </li>
           </ul>
         </div>
 

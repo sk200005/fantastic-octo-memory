@@ -123,19 +123,26 @@ function HeroSection() {
               Read: Announcing Surf
             </p>
           </div> */}
-          <br /><br /><br /><br /><br /><br /><br />
+          <div className="h-24 lg:h-36" />
 
           <div className="mt-10 max-w-3xl pb-4 lg:mt-12 lg:ml-6">
             <p className="hero-subtitle font-serif text-3xl font-black leading-[0.98] tracking-[-0.03em] text-[#1f2023] sm:text-4xl lg:text-[4rem]">
-              The Best&nbsp;Platform  To Amplify  Your Content.
+              Read the News beyond the Lines.
             </p>
+            
 
-            <div className="mt-7">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 to="/news"
                 className="inline-flex rounded-full bg-[#1f2023] px-7 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 hover:bg-slate-800 sm:text-sm"
               >
                 Explore News
+              </Link>
+              <Link
+                to="/bias-analysis"
+                className="inline-flex rounded-full border border-slate-300 bg-white px-7 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-900 shadow-[0_10px_20px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:border-sky-200 hover:text-sky-700 sm:text-sm"
+              >
+                Analyze Bias
               </Link>
             </div>
           </div>

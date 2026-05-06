@@ -101,7 +101,7 @@ function PdfArticleUpload({ onArticleUploaded }) {
   };
 
   return (
-    <section className="bg-[linear-gradient(180deg,#eef4fb_0%,#f8fafc_100%)] pb-16 pt-14 sm:pb-18 sm:pt-16">
+    <section className="bg-[linear-gradient(180deg,#f8fafc_0%,#f6f9fc_52%,#f8fafc_100%)] pb-18 pt-16 sm:pb-20 sm:pt-18">
       <div className="mx-auto max-w-7xl px-6 md:px-10 xl:px-16">
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>

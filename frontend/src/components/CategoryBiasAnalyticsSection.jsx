@@ -269,20 +269,37 @@ function CategoryBiasAnalyticsSection({ className = "" }) {
       className={`rounded-[2.2rem] border border-[#48637f] bg-[linear-gradient(135deg,#374e68_0%,#425a75_45%,#4d6784_100%)] shadow-[0_20px_46px_rgba(43,60,79,0.18)] ${className}`.trim()}
     >
       <div className="w-full px-12 py-10">
-        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-[2rem] font-semibold text-[#fbf8f1]">Category Bias Analytics</h2>
             {/* <p className="mt-2 max-w-3xl text-base leading-7 text-[#dfe8ef]">
               Explore animated bias metrics, category performance, source influence, and political lean signals inside one analytics window.
             </p> */}
           </div>
-          <div className="text-right">
-            <p className="text-sm uppercase tracking-[0.22em] text-[#b5d8f6]">
-              Live analytics snapshot
-            </p>
-            <p className="mt-2 text-base text-[#dfe8ef]">
-              Average bias score per category
-            </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end lg:justify-end">
+            <div className="rounded-[1.25rem] border border-[rgba(224,235,247,0.16)] bg-[rgba(255,255,255,0.08)] px-5 py-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-[#b5d8f6]">
+                Total articles
+              </p>
+              <p className="mt-2 text-3xl font-semibold leading-none text-[#fbf8f1]">
+                <CountUp
+                  key={`total-articles-${hasAnimated ? "live" : "idle"}`}
+                  start={0}
+                  end={hasAnimated ? analytics.totalArticles : 0}
+                  duration={COUNTUP_DURATION}
+                />
+              </p>
+              <p className="mt-2 text-sm text-[#dfe8ef]">news articles indexed</p>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <p className="text-sm uppercase tracking-[0.22em] text-[#b5d8f6]">
+                Live analytics snapshot
+              </p>
+              <p className="mt-2 text-base text-[#dfe8ef]">
+                Average bias score per category
+              </p>
+            </div>
           </div>
         </div>
 
