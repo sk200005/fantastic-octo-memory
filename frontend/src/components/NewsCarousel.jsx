@@ -228,7 +228,7 @@ function NewsCarousel({ news = [] }) {
   }
 
   return (
-    <section className="news-carousel deferred-section relative overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#eef4fb_100%)] py-16 sm:py-18">
+    <section className="news-carousel deferred-section relative overflow-hidden bg-[linear-gradient(180deg,#f7f6f2_0%,#f8fafc_28%,#eef4fb_100%)] py-16 sm:py-18">
       <div className="mx-auto max-w-7xl px-6 md:px-10 xl:px-16">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">

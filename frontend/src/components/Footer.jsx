@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/axios";
 
 const LLM_PROVIDERS = [
@@ -72,41 +73,52 @@ function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.25fr_repeat(3,0.75fr)] lg:px-10">
         <div>
           <div className="text-2xl font-black tracking-[0.22em] text-white">INSIGHT AI</div>
-          <p className="mt-5 max-w-sm text-sm leading-7 text-slate-300">
+          <p className="mt-5 max-w-sm text-base leading-7 text-slate-300">
             Discover balanced reporting, compare perspectives, and stay closer to the stories shaping the world.
           </p>
         </div>
 
         <div>
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Product</h3>
-          <ul className="mt-5 space-y-3 text-sm text-slate-200">
+          <ul className="mt-5 space-y-3.5 text-base text-slate-200">
             <li>Features</li>
-            <li>News</li>
-            <li>Bias Analysis</li>
+            <li>
+              <Link to="/news" className="transition-colors hover:text-cyan-300">News</Link>
+            </li>
+            <li>
+              <Link to="/bias-analysis" className="transition-colors hover:text-cyan-300">Bias Analysis</Link>
+            </li>
           </ul>
         </div>
 
         <div>
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Company</h3>
-          <ul className="mt-5 space-y-3 text-sm text-slate-200">
-            <li>About</li>
-            <li>Careers</li>
+          <ul className="mt-5 space-y-3.5 text-base text-slate-200">
+            <li>
+              <Link to="/about" className="transition-colors hover:text-cyan-300">About</Link>
+            </li>
             <li>Contact</li>
           </ul>
         </div>
 
         <div>
           <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Social</h3>
-          <ul className="mt-5 space-y-3 text-sm text-slate-200">
-            <li>Twitter</li>
-            <li>LinkedIn</li>
-            <li>GitHub</li>
+          <ul className="mt-5 space-y-3.5 text-base text-slate-200">
+            <li>
+              <a href="https://x.com/Swayam1563" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-cyan-300">Twitter</a>
+            </li>
+            <li>
+              <a href="https://www.linkedin.com/in/swayam-korde-7b76bb285" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-cyan-300">LinkedIn</a>
+            </li>
+            <li>
+              <a href="https://github.com/sk200005" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-cyan-300">GitHub</a>
+            </li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 text-base text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <span>© 2026 InSight AI</span>
 
           <div className="flex items-center justify-end">

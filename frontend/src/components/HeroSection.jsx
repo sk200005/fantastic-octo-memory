@@ -20,14 +20,14 @@ const logoBadges = [
   },
   {
     id: "toi",
-    position: "top-[83%] left-[4%]",
+    position: "bottom-6 left-[4%]",
     shell: "h-40 w-40 xl:h-44 xl:w-44",
     src: "/logos/image copy 3.png",
     alt: "Times of India",
   },
   {
     id: "cnn",
-    position: "top-[88%] left-[30%]",
+    position: "bottom-4 left-[30%]",
     shell: "h-40 w-40 xl:h-44 xl:w-44",
     src: "/logos/image copy 4.png",
     alt: "CNN",
@@ -55,14 +55,14 @@ const logoBadges = [
   },
   {
     id: "india-today",
-    position: "top-[82%] right-[5%]",
+    position: "bottom-7 right-[5%]",
     shell: "h-40 w-40 xl:h-44 xl:w-44",
     src: "/logos/image copy 8.png",
     alt: "India Today",
   },
   {
     id: "wire",
-    position: "top-[87%] right-[22%]",
+    position: "bottom-5 right-[22%]",
     shell: "h-40 w-40 xl:h-44 xl:w-44",
     src: "/logos/image copy 9.png",
     alt: "The Wire",

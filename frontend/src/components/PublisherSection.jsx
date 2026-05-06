@@ -14,7 +14,10 @@ const publisherLogos = [
 
 function PublisherSection() {
   return (
-    <section id="about" className="deferred-section bg-white py-24 sm:py-28">
+    <section
+      id="about"
+      className="deferred-section bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_22%,#ffffff_100%)] py-24 sm:py-28"
+    >
       <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
         <div className="max-w-xl">
           <p className="text-sm font-black uppercase tracking-[0.28em] text-sky-700">

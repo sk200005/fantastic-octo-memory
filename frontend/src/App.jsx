@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import About from "./pages/About";
 import BiasAnalysis from "./pages/BiasAnalysis";
 import LandingPage from "./pages/LandingPage";
 import News from "./pages/News";
@@ -14,8 +15,9 @@ function App() {
       <SmoothScroll>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
           <Route path="/news" element={<News />} />
-           <Route path="/bias-analysis" element={<BiasAnalysis />} />
+          <Route path="/bias-analysis" element={<BiasAnalysis />} />
         </Routes>
       </SmoothScroll>
     </>

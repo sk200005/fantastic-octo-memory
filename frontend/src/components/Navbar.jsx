@@ -37,7 +37,7 @@ function Navbar() {
             Bias Analysis
           </Link>
           <Link
-            to={{ pathname: "/", hash: "#about" }}
+            to="/about"
             className="rounded-full px-2 py-1.5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-300 hover:text-[#01040c] hover:shadow-[0_12px_24px_rgba(2,8,23,0.18)] focus-visible:-translate-y-0.5 focus-visible:bg-slate-300 focus-visible:text-[#01040c] focus-visible:outline-none"
           >
             About
