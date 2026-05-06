@@ -1,6 +1,6 @@
 Backend - npm run dev
 Frontend - npm run dev
-
+Ai-pipeline - uvicorn bias_pipeline:app --reload --port 9000
 
 1. /api/rss/fetch
 2. /api/scraper/run
@@ -25,11 +25,6 @@ display in frontend
 
 
 
-
-
-uvicorn bias_pipeline:app --reload --port 9000
-npm run dev
-npm run dev
 
 
 

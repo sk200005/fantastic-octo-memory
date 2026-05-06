@@ -19,13 +19,13 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   })
 );
 app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/insight-ai")
+mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/insight-ai")
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 

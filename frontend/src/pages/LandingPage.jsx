@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
-import CategoryBiasAnalyticsSection from "../components/CategoryBiasAnalyticsSection";
+
 import Footer from "../components/Footer";
 import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
@@ -42,9 +42,7 @@ function LandingPage() {
       <main>
         <HeroSection />
         <NewsCarousel news={latestNewsItems} />
-        <div className="pb-12 pt-16 md:pt-20">
-          <CategoryBiasAnalyticsSection className="w-full" />
-        </div>
+        
         <PublisherSection />
       </main>
       <Footer />

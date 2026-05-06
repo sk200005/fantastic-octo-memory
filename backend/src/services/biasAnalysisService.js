@@ -7,7 +7,17 @@ const {
 const crypto = require("crypto");
 const Article = require("../models/Article");
 const { analyzeLocalBiasSignals } = require("./pythonClient");
-const { analyzePoliticalBiasBatch } = require("./geminiBiasService");
+const { analyzePoliticalBiasBatch: geminiBatch } = require("./geminiBiasService");
+const { analyzePoliticalBiasBatch: groqBatch } = require("./groqBiasService");
+const { getActiveProvider } = require("./llmProviderService");
+
+async function analyzePoliticalBiasBatch(articles) {
+  const provider = getActiveProvider();
+  if (provider === "groq") {
+    return groqBatch(articles);
+  }
+  return geminiBatch(articles);
+}
 const {
   getSourceLean,
   calculateLeanDeviation,

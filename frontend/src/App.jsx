@@ -1,18 +1,24 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import BiasAnalysis from "./pages/BiasAnalysis";
 import LandingPage from "./pages/LandingPage";
 import News from "./pages/News";
 import SmoothScroll from "./components/SmoothScroll";
+import CustomCursor from "./components/CustomCursor";
 
 function App() {
   return (
-    <SmoothScroll>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/news" element={<News />} />
-      </Routes>
-    </SmoothScroll>
+    <>
+      <CustomCursor />
+      <SmoothScroll>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/news" element={<News />} />
+           <Route path="/bias-analysis" element={<BiasAnalysis />} />
+        </Routes>
+      </SmoothScroll>
+    </>
   );
 }
 

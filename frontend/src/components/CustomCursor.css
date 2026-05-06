@@ -1,0 +1,31 @@
+.custom-cursor__circle {
+  --cursor-scale: 1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(var(--cursor-scale));
+  will-change: left, top, transform;
+}
+
+.custom-cursor__circle--core {
+    background: #94a3b8;
+  box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+}
+
+.custom-cursor__circle--ring {
+  background: transparent;
+    border: 2px solid #94a3b8;
+  transition: transform 160ms ease;
+}
+
+
+.custom-cursor__circle--outer {
+    background: rgba(37, 99, 235, 0.15);
+  opacity: 0.85;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}

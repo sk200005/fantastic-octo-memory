@@ -1,4 +1,5 @@
 const { runBiasAnalysisBatch } = require("../services/biasAnalysisService");
+const { getProviderStatus, setActiveProvider } = require("../services/llmProviderService");
 
 async function runBiasAnalysis(req, res) {
   try {
@@ -11,4 +12,17 @@ async function runBiasAnalysis(req, res) {
   }
 }
 
-module.exports = { runBiasAnalysis };
+async function getProvider(req, res) {
+  res.json(getProviderStatus());
+}
+
+async function setProvider(req, res) {
+  const { provider } = req.body;
+  if (!provider) {
+    return res.status(400).json({ error: "Provider is required" });
+  }
+  const status = setActiveProvider(provider);
+  res.json(status);
+}
+
+module.exports = { runBiasAnalysis, getProvider, setProvider };

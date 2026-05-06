@@ -20,12 +20,14 @@ body,
 }
 
 body {
+  cursor: none;
   margin: 0;
   min-width: 320px;
   background: #f8fafc;
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  cursor: none !important;
 }
 
 html.lenis,
@@ -50,13 +52,11 @@ html.lenis body {
 }
 
 .deferred-section {
-  content-visibility: auto;
-  contain-intrinsic-size: 900px;
+  /* content-visibility removed for cross-browser stability */
 }
 
 .deferred-card {
-  content-visibility: auto;
-  contain-intrinsic-size: 420px;
+  /* content-visibility removed for cross-browser stability */
 }
 
 @media (prefers-reduced-motion: reduce) {
