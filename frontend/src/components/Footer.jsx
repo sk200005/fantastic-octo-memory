@@ -109,39 +109,21 @@ function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <span>© 2026 InSight AI</span>
 
-          <div className="flex flex-col items-start gap-2 sm:items-end">
-            <div className="grid grid-cols-2 gap-2 rounded-[1.15rem] border border-white/15 bg-white/10 p-1">
-              {LLM_PROVIDERS.map((provider) => {
-                const isActive = providerStatus.activeProvider === provider.id;
-                const isConfigured = Boolean(providerStatus.configuredProviders?.[provider.id]);
-
-                return (
-                  <button
-                    key={provider.id}
-                    type="button"
-                    onClick={() => handleProviderChange(provider.id)}
-                    disabled={isProviderSaving}
-                    aria-pressed={isActive}
-                    title={
-                      isConfigured
-                        ? `${provider.label} API key configured`
-                        : `${provider.label} API key missing`
-                    }
-                    className={`h-10 min-w-24 rounded-[0.85rem] px-4 text-sm font-semibold transition ${
-                      isActive
-                        ? "bg-[#fbf8f1] text-[#2f465e] shadow-[0_8px_18px_rgba(0,0,0,0.24)]"
-                        : "text-slate-200 hover:bg-white/10"
-                    } disabled:cursor-not-allowed disabled:opacity-70`}
-                  >
-                    {provider.label}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="min-h-5 text-xs font-medium text-slate-300">
-              {providerMessage ||
-                `${getProviderLabel(providerStatus.activeProvider)} powers new bias runs`}
-            </p>
+          <div className="flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => handleProviderChange(providerStatus.activeProvider === "gemini" ? "groq" : "gemini")}
+              disabled={isProviderSaving}
+              aria-label="Toggle AI Provider"
+              title={providerStatus.activeProvider === "gemini" ? "Gemini Active" : "Groq Active"}
+              className="relative inline-flex h-3.5 w-6 shrink-0 cursor-pointer items-center rounded-full border border-transparent bg-white/15 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span
+                className={`pointer-events-none inline-block h-2.5 w-2.5 transform rounded-full bg-slate-300 shadow-sm ring-0 transition duration-200 ease-in-out ${
+                  providerStatus.activeProvider === "groq" ? "translate-x-2.5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
           </div>
         </div>
       </div>

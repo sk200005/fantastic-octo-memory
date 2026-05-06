@@ -11,19 +11,18 @@
 }
 
 .custom-cursor__circle--core {
-    background: #94a3b8;
+  background: #94a3b8;
   box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
 }
 
 .custom-cursor__circle--ring {
   background: transparent;
-    border: 2px solid #94a3b8;
+  border: 2px solid #94a3b8;
   transition: transform 160ms ease;
 }
 
-
 .custom-cursor__circle--outer {
-    background: rgba(37, 99, 235, 0.15);
+  background: rgba(148, 163, 184, 0.15);
   opacity: 0.85;
   transition:
     opacity 160ms ease,

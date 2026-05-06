@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const rssRoutes = require("./routes/rssRoutes");
 const articleRoutes = require("./routes/articleRoutes");
 const scraperRoutes = require("./routes/scraperRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const recommendRoutes = require("./routes/recommendRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const healthRoutes = require("./routes/health.routes");
 
@@ -16,6 +18,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 
 app.use("/api", healthRoutes);
 app.use("/api/rss", rssRoutes);
@@ -23,6 +26,7 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/recommend", recommendRoutes);
+app.use("/api/uploads", uploadRoutes);
 app.use("/api", scraperRoutes);
 
 module.exports = app;

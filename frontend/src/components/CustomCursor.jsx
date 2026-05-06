@@ -3,18 +3,15 @@ import "./CustomCursor.css";
 
 const circles = [
   {
-    size: 8,
-    color: "#2563eb",
-    className: "custom-cursor__circle custom-cursor__circle--dot",
+    size: 6,
+    className: "custom-cursor__circle custom-cursor__circle--core",
   },
   {
     size: 22,
-    color: "rgba(37, 99, 235, 0.4)",
-    className: "custom-cursor__circle custom-cursor__circle--mid",
+    className: "custom-cursor__circle custom-cursor__circle--ring",
   },
   {
-    size: 36,
-    color: "rgba(37, 99, 235, 0.15)",
+    size: 30,
     className: "custom-cursor__circle custom-cursor__circle--outer",
   },
 ];
@@ -33,6 +30,7 @@ function CustomCursor() {
     };
 
     let animationFrameId;
+    let interactiveElements = [];
 
     const moveCursor = (event) => {
       mouse.x = event.clientX;
@@ -40,23 +38,36 @@ function CustomCursor() {
     };
 
     const setHoverState = (isHovering) => {
+      const middleCircleNode = circleRefs.current[1];
       const outerCircleNode = circleRefs.current[2];
-      if (!outerCircleNode) return;
 
-      outerCircleNode.style.setProperty("--cursor-scale", isHovering ? "1.45" : "1");
-      outerCircleNode.style.opacity = isHovering ? "1" : "0.85";
-    };
+      if (middleCircleNode) {
+        middleCircleNode.style.setProperty("--cursor-scale", isHovering ? "1.2" : "1");
+      }
 
-    const handlePointerOver = (event) => {
-      if (event.target.closest("button, a")) {
-        setHoverState(true);
+      if (outerCircleNode) {
+        outerCircleNode.style.setProperty("--cursor-scale", isHovering ? "1.5" : "1");
+        outerCircleNode.style.opacity = isHovering ? "1" : "0.85";
       }
     };
 
-    const handlePointerOut = (event) => {
-      if (event.target.closest("button, a")) {
-        setHoverState(false);
-      }
+    const handleMouseEnter = () => setHoverState(true);
+    const handleMouseLeave = () => setHoverState(false);
+
+    const bindInteractiveElements = () => {
+      interactiveElements.forEach((element) => {
+        element.removeEventListener("mouseenter", handleMouseEnter);
+        element.removeEventListener("mouseleave", handleMouseLeave);
+      });
+
+      interactiveElements = Array.from(
+        document.querySelectorAll("button, a, .clickable"),
+      );
+
+      interactiveElements.forEach((element) => {
+        element.addEventListener("mouseenter", handleMouseEnter);
+        element.addEventListener("mouseleave", handleMouseLeave);
+      });
     };
 
     const animateCursor = () => {
@@ -79,14 +90,15 @@ function CustomCursor() {
     };
 
     window.addEventListener("mousemove", moveCursor);
-    document.addEventListener("mouseover", handlePointerOver);
-    document.addEventListener("mouseout", handlePointerOut);
+    bindInteractiveElements();
     animationFrameId = requestAnimationFrame(animateCursor);
 
     return () => {
       window.removeEventListener("mousemove", moveCursor);
-      document.removeEventListener("mouseover", handlePointerOver);
-      document.removeEventListener("mouseout", handlePointerOut);
+      interactiveElements.forEach((element) => {
+        element.removeEventListener("mouseenter", handleMouseEnter);
+        element.removeEventListener("mouseleave", handleMouseLeave);
+      });
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
@@ -104,7 +116,6 @@ function CustomCursor() {
           style={{
             width: `${circle.size}px`,
             height: `${circle.size}px`,
-            backgroundColor: circle.color,
           }}
         />
       ))}

@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
 import NewsCarousel from "../components/NewsCarousel";
+import PdfArticleUpload from "../components/PdfArticleUpload";
 import PublisherSection from "../components/PublisherSection";
 
 function LandingPage() {
@@ -26,7 +27,7 @@ function LandingPage() {
   const latestNewsItems = useMemo(
     () =>
       [...latestNews]
-        .filter((article) => article.image && article.title?.trim())
+        .filter((article) => article.title?.trim() && (article.image || article.isUserUploaded))
         .sort(
           (firstArticle, secondArticle) =>
             new Date(secondArticle.createdAt || secondArticle.publishedAt || 0).getTime() -
@@ -36,13 +37,20 @@ function LandingPage() {
     [latestNews]
   );
 
+  const handleUploadedArticle = (article) => {
+    setLatestNews((currentNews) => [
+      article,
+      ...currentNews.filter((item) => item._id !== article._id),
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <Navbar />
       <main>
         <HeroSection />
         <NewsCarousel news={latestNewsItems} />
-        
+        <PdfArticleUpload onArticleUploaded={handleUploadedArticle} />
         <PublisherSection />
       </main>
       <Footer />

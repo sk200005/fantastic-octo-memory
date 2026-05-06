@@ -30,9 +30,9 @@ function getBiasBarSegments(article) {
     const rightShare = Math.max(4, 100 - leftShare - centerShare);
 
     return [
-      { key: "left", value: leftShare, tone: "bg-rose-600" },
+      { key: "left", value: leftShare, tone: "bg-blue-700" },
       { key: "center", value: centerShare, tone: "bg-slate-200" },
-      { key: "right", value: rightShare, tone: "bg-blue-700" },
+      { key: "right", value: rightShare, tone: "bg-rose-600" },
     ];
   }
 
@@ -42,9 +42,9 @@ function getBiasBarSegments(article) {
     const leftShare = Math.max(4, 100 - rightShare - centerShare);
 
     return [
-      { key: "left", value: leftShare, tone: "bg-rose-600" },
+      { key: "left", value: leftShare, tone: "bg-blue-700" },
       { key: "center", value: centerShare, tone: "bg-slate-200" },
-      { key: "right", value: rightShare, tone: "bg-blue-700" },
+      { key: "right", value: rightShare, tone: "bg-rose-600" },
     ];
   }
 
@@ -53,9 +53,9 @@ function getBiasBarSegments(article) {
   const rightShare = 100 - centerShare - leftShare;
 
   return [
-    { key: "left", value: leftShare, tone: "bg-rose-600" },
+    { key: "left", value: leftShare, tone: "bg-blue-700" },
     { key: "center", value: centerShare, tone: "bg-slate-200" },
-    { key: "right", value: rightShare, tone: "bg-blue-700" },
+    { key: "right", value: rightShare, tone: "bg-rose-600" },
   ];
 }
 
@@ -88,13 +88,21 @@ function NewsCarouselCard({ article }) {
       className="group flex h-full w-[min(78vw,19rem)] shrink-0 flex-col overflow-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] sm:w-[18rem] lg:w-[19rem] xl:w-[20rem]"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-        <img
-          src={article.image}
-          alt={article.title || "Latest news"}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-          loading="lazy"
-          decoding="async"
-        />
+        {article.image ? (
+          <img
+            src={article.image}
+            alt={article.title || "Latest news"}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#0f172a_0%,#0369a1_55%,#14b8a6_100%)] px-6 text-center">
+            <span className="text-lg font-black uppercase tracking-[0.18em] text-white">
+              PDF Article
+            </span>
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/35 to-transparent" />
       </div>
 
@@ -146,7 +154,7 @@ function NewsCarousel({ news = [] }) {
   const items = useMemo(
     () =>
       news
-        .filter((article) => article.image && article.title?.trim())
+        .filter((article) => article.title?.trim() && (article.image || article.isUserUploaded))
         .slice(0, 8),
     [news]
   );

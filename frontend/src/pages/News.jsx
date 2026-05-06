@@ -259,7 +259,7 @@ function News() {
   }, [category]);
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#283e58_0%,#1f3348_46%,#17283b_100%)]">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#374e68_0%,#425a75_45%,#4d6784_100%)]">
       <Navbar />
 
       <div className="w-full px-6 pb-16 pt-8 md:px-10 xl:px-16 space-y-6">

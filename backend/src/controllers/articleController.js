@@ -63,7 +63,14 @@ const getNewsArticles = async (req, res) => {
         : undefined;
     const requestedLimit = Number.parseInt(req.query.limit, 10);
     const query = {
-      processingStatus: "bias_analyzed",
+      $or: [
+        { processingStatus: "bias_analyzed" },
+        {
+          articleOrigin: "pdf_upload",
+          summary: { $exists: true, $ne: "" },
+          bias: { $exists: true, $ne: null },
+        },
+      ],
     };
 
     if (category) {

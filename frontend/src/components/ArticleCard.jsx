@@ -114,6 +114,10 @@ function getLeanBadgeClass(lean) {
   }
 }
 
+function isExternalArticleLink(link) {
+  return /^https?:\/\//i.test(String(link || ""));
+}
+
 function ArticleCard({ article }) {
   const previewText = getPreviewText(article);
   const summaryPoints = getSummaryPoints(article);
@@ -145,6 +149,7 @@ function ArticleCard({ article }) {
     () => getPerspectiveBalanceMeta(perspectiveBalanceScore),
     [perspectiveBalanceScore]
   );
+  const articleLink = isExternalArticleLink(article.link) ? article.link : "";
 
   return (
     <div
@@ -240,15 +245,21 @@ function ArticleCard({ article }) {
                 </span>
               </div>
 
-              <a
-                href={article.link}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-medium text-blue-600 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-blue-700 hover:underline group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5"
-                onClick={(event) => event.stopPropagation()}
-              >
-                Read Full Article →
-              </a>
+              {articleLink ? (
+                <a
+                  href={articleLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm font-medium text-blue-600 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-blue-700 hover:underline group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  Read Full Article →
+                </a>
+              ) : (
+                <span className="text-sm font-medium text-slate-500">
+                  Uploaded PDF Article
+                </span>
+              )}
             </div>
           </div>
         </div>

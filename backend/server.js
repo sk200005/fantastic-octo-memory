@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const path = require("path");
 
 
 const rssRoutes = require("./src/routes/rssRoutes");
@@ -10,6 +11,7 @@ const newsRoutes = require("./src/routes/newsRoutes");
 const scraperRoutes = require("./src/routes/scraperRoutes");
 const articleRoutes = require("./src/routes/articleRoutes");
 const biasRoutes = require("./src/routes/biasRoutes");
+const uploadRoutes = require("./src/routes/uploadRoutes");
 const summarizationRoutes = require("./src/routes/summarizationRoutes");
 const analyticsRoutes = require("./src/routes/analyticsRoutes");
 const recommendRoutes = require("./src/routes/recommendRoutes");
@@ -24,6 +26,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 
 mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/insight-ai")
   .then(() => console.log("MongoDB Connected"))
@@ -36,6 +39,7 @@ app.use("/api/articles", articleRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/recommend", recommendRoutes);
 app.use("/api/bias", biasRoutes);
+app.use("/api/uploads", uploadRoutes);
 app.use("/api/summarize", summarizationRoutes);
 
 app.listen(8000, () => {

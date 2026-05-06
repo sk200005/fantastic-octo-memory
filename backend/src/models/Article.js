@@ -81,6 +81,20 @@ const articleSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  isUserUploaded: {
+    type: Boolean,
+    default: false
+  },
+  articleOrigin: {
+    type: String,
+    enum: ["rss", "pdf_upload"],
+    default: "rss",
+    index: true
+  },
+  originalFilename: {
+    type: String,
+    default: ""
+  },
 
   processingStatus: {
   type: String,
