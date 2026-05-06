@@ -262,45 +262,73 @@ function News() {
     <div className="min-h-screen bg-[linear-gradient(135deg,#374e68_0%,#425a75_45%,#4d6784_100%)]">
       <Navbar />
 
-      <div className="w-full px-6 pb-16 pt-8 md:px-10 xl:px-16 space-y-6">
-        <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.14)]">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">
-                Dashboard
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold text-white">
-                Filter ○ Analyse ○ Relate
-              </h1>
-              <p className="mt-2 min-h-6 text-sm text-gray-300">
-                {statusMessage ||
-                  "Explore categories, bias analytics, and similarity-based recommendations."}
-              </p>
-              <p className="mt-3 text-sm font-medium text-cyan-200">
-                {articleCountLabel}
-              </p>
+      <div className="w-full px-6 pb-20 pt-8 md:px-10 xl:px-16 space-y-5">
+
+        {/* ── Control Panel ── */}
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden">
+
+          {/* Top accent bar */}
+          <div className="h-[2px] w-full bg-[linear-gradient(90deg,transparent,rgba(125,211,252,0.6),transparent)]" />
+
+          <div className="px-7 pt-6 pb-5 flex flex-col gap-5">
+
+            {/* Row 1: title + reload */}
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#7fc6ff]/70">
+                  News Dashboard
+                </p>
+                <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-white">
+                  {statusMessage
+                    ? <span className="text-base font-normal text-slate-300">{statusMessage}</span>
+                    : "Filter · Analyse · Relate"}
+                </h1>
+                <p className="mt-1.5 text-sm font-medium text-[#7fc6ff]/80">
+                  {articleCountLabel}
+                </p>
+              </div>
+
+              <button
+                onClick={reloadArticles}
+                disabled={loading}
+                className="shrink-0 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 px-5 py-2.5 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_4px_20px_rgba(6,182,212,0.45)] transition-all duration-200 hover:from-cyan-400 hover:to-sky-400 hover:shadow-[0_6px_28px_rgba(6,182,212,0.6)] hover:scale-[1.03] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Processing…
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="23 4 23 10 17 10" />
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                    Reload News
+                  </>
+                )}
+              </button>
             </div>
 
-            <button
-              onClick={reloadArticles}
-              disabled={loading}
-              className="rounded-xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? "Processing..." : "Reload Articles"}
-            </button>
-          </div>
+            {/* Divider */}
+            <div className="h-px w-full bg-white/[0.07]" />
 
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap gap-3">
+            {/* Row 2: category chips + sort */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
+              {/* Category filter track */}
+              <div className="inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1">
                 {categories.map((item) => (
                   <button
                     key={item.value}
                     onClick={() => setCategory(item.value)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    className={`rounded-lg px-4 py-2 text-sm font-semibold tracking-wide transition-all duration-200 ${
                       category === item.value
-                        ? "bg-cyan-400 text-slate-950"
-                        : "bg-white/10 text-white hover:bg-white/20"
+                        ? "bg-[rgba(125,211,252,0.18)] text-cyan-200 shadow-[0_0_0_1px_rgba(125,211,252,0.35)]"
+                        : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
                     {item.label}
@@ -308,67 +336,57 @@ function News() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setRegion("all")}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    region === "all"
-                      ? "bg-emerald-400 text-slate-950"
-                      : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
-                >
-                  All Regions
-                </button>
-                <button
-                  onClick={() => setRegion("india")}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    region === "india"
-                      ? "bg-emerald-400 text-slate-950"
-                      : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
-                >
-                  India
-                </button>
-                <button
-                  onClick={() => setRegion("world")}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    region === "world"
-                      ? "bg-emerald-400 text-slate-950"
-                      : "bg-white/10 text-white hover:bg-white/20"
-                  }`}
-                >
-                  World
-                </button>
-              </div>
-            </div>
-
-            <label className="flex items-center gap-3 text-sm text-gray-300">
-              <span className="font-medium text-white">Sort By</span>
+              {/* Sort */}
               <select
                 value={sortOrder}
                 onChange={(event) => setSortOrder(event.target.value)}
-                className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2 text-sm font-medium text-white outline-none transition focus:border-cyan-400"
+                className="self-start rounded-lg border border-white/[0.1] bg-[rgba(0,0,0,0.25)] px-3.5 py-2 text-sm font-medium text-slate-300 outline-none transition focus:border-cyan-400/60 focus:text-white sm:self-auto"
               >
-                <option value="latest">Latest to oldest</option>
-                <option value="oldest">Oldest to latest</option>
-                <option value="most-biased">Most biased to least biased</option>
-                <option value="least-biased">Least biased to most biased</option>
+                <option value="latest">Latest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="most-biased">Most biased</option>
+                <option value="least-biased">Least biased</option>
               </select>
-            </label>
+            </div>
+
+            {/* Row 3: region chips */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500 pr-1">Region</span>
+              {[
+                { label: "All", value: "all" },
+                { label: "India", value: "india" },
+                { label: "World", value: "world" },
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => setRegion(item.value)}
+                  className={`rounded-md px-3.5 py-1.5 text-sm font-semibold tracking-wide transition-all duration-200 ${
+                    region === item.value
+                      ? "bg-[rgba(52,211,153,0.18)] text-emerald-300 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
           </div>
         </div>
 
-        <section className="space-y-5">
+        {/* ── Article list ── */}
+        <section className="space-y-4">
           {sortedArticles.length > 0 ? (
             sortedArticles.map((article) => (
               <ArticleCard key={article._id} article={article} />
             ))
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-8 text-center text-sm text-gray-200">
+            <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-6 py-10 text-center text-sm text-slate-400">
               No articles match the current filters yet.
             </div>
           )}
         </section>
+
       </div>
     </div>
   );
